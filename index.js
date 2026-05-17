@@ -22,7 +22,7 @@ function createBot(name) {
       bot.chat("/login 676769");
     }, 3000);
 
-    setInterval(() => {
+    bot.jumpInterval = setInterval(() => {
       bot.setControlState("jump", true);
 
       setTimeout(() => {
@@ -34,9 +34,17 @@ function createBot(name) {
   bot.on("end", () => {
     console.log(name + " disconnected!");
 
+    clearInterval(bot.jumpInterval);
+
     setTimeout(() => {
-      createBot(name);
-    }, 5000);
+      if (name === "Deadmau5") {
+        deadBot = createBot(name);
+      }
+
+      if (name === "Prince") {
+        princeBot = createBot(name);
+      }
+    }, 30000);
   });
 
   bot.on("error", (err) => {
