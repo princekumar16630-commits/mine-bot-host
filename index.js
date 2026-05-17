@@ -135,6 +135,10 @@ app.post("/send", (req, res) => {
   res.redirect("/");
 });
 
+// AUTO START BOTS
+deadBot = createBot("Deadmau5");
+princeBot = createBot("Prince");
+
 app.listen(3000, "0.0.0.0", () => {
   console.log("Control panel running");
 });
