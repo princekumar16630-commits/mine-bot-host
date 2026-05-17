@@ -17,6 +17,18 @@ function createBot(name) {
 
   bot.on("login", () => {
     console.log(name + " joined!");
+
+    setTimeout(() => {
+      bot.chat("/login 676769");
+    }, 3000);
+
+    setInterval(() => {
+      bot.setControlState("jump", true);
+
+      setTimeout(() => {
+        bot.setControlState("jump", false);
+      }, 500);
+    }, 30000);
   });
 
   bot.on("end", () => {
@@ -27,13 +39,9 @@ function createBot(name) {
     }, 5000);
   });
 
-  setInterval(() => {
-    bot.setControlState("jump", true);
-
-    setTimeout(() => {
-      bot.setControlState("jump", false);
-    }, 500);
-  }, 30000);
+  bot.on("error", (err) => {
+    console.log(err);
+  });
 
   return bot;
 }
