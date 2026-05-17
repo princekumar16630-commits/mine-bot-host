@@ -1,6 +1,5 @@
 const express = require("express");
 const mineflayer = require("mineflayer");
-const readline = require("readline");
 
 const app = express();
 
@@ -32,10 +31,6 @@ function createBot(name) {
     }, 30000);
   });
 
-  bot.on("chat", (username, message) => {
-    console.log(`[CHAT] ${username}: ${message}`);
-  });
-
   bot.on("end", () => {
     console.log(name + " disconnected!");
 
@@ -49,7 +44,7 @@ function createBot(name) {
       if (name === "Prince") {
         princeBot = createBot(name);
       }
-    }, 30000);
+    }, 3600000); // 1 hour reconnect delay
   });
 
   bot.on("error", (err) => {
@@ -62,35 +57,36 @@ function createBot(name) {
 deadBot = createBot("Deadmau5");
 princeBot = createBot("Prince");
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
-
-rl.on("line", (input) => {
-
-  if (input.startsWith("dead ")) {
-    const cmd = input.replace("dead ", "");
-
-    if (deadBot) {
-      deadBot.chat(cmd);
-      console.log("[Deadmau5 SENT] " + cmd);
-    }
-  }
-
-  if (input.startsWith("prince ")) {
-    const cmd = input.replace("prince ", "");
-
-    if (princeBot) {
-      princeBot.chat(cmd);
-      console.log("[Prince SENT] " + cmd);
-    }
-  }
-
-});
-
 app.get("/", (req, res) => {
-  res.send("Minecraft Bot Host Running");
+  res.send(`
+    <h1>Minecraft Bot Control</h1>
+
+    <form action="/send" method="POST">
+      <input name="bot" placeholder="Deadmau5 or Prince">
+      <input name="msg" placeholder="Minecraft command">
+      <button type="submit">Send</button>
+    </form>
+
+    <p>Examples:</p>
+    <p>/home farm</p>
+    <p>/msg player hi</p>
+    <p>/tp x y z</p>
+  `);
+});
+
+app.post("/send", (req, res) => {
+  const botName = req.body.bot;
+  const msg = req.body.msg;
+
+  if (botName === "Deadmau5") {
+    deadBot.chat(msg);
+  }
+
+  if (botName === "Prince") {
+    princeBot.chat(msg);
+  }
+
+  res.redirect("/");
 });
 
 app.listen(3000, "0.0.0.0", () => {
