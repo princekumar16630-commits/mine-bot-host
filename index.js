@@ -36,6 +36,18 @@ function createBot(name) {
     console.log(name + " disconnected!");
 
     clearInterval(bot.jumpInterval);
+
+    setTimeout(() => {
+
+      if (name === "Deadmau5" && deadBot) {
+        deadBot = createBot("Deadmau5");
+      }
+
+      if (name === "Prince" && princeBot) {
+        princeBot = createBot("Prince");
+      }
+
+    }, 60000); // reconnect after 1 minute
   });
 
   bot.on("error", (err) => {
