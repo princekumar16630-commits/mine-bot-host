@@ -5,10 +5,11 @@ const app = express();
 
 app.use(express.urlencoded({ extended: true }));
 
-let deadBot;
-let princeBot;
+let deadBot = null;
+let princeBot = null;
 
 function createBot(name) {
+
   const bot = mineflayer.createBot({
     host: "karmasmp.ddns.net",
     port: 25565,
@@ -35,16 +36,6 @@ function createBot(name) {
     console.log(name + " disconnected!");
 
     clearInterval(bot.jumpInterval);
-
-    setTimeout(() => {
-      if (name === "Deadmau5") {
-        deadBot = createBot(name);
-      }
-
-      if (name === "Prince") {
-        princeBot = createBot(name);
-      }
-    }, 3600000); // 1 hour reconnect delay
   });
 
   bot.on("error", (err) => {
@@ -54,35 +45,78 @@ function createBot(name) {
   return bot;
 }
 
-deadBot = createBot("Deadmau5");
-princeBot = createBot("Prince");
-
 app.get("/", (req, res) => {
+
   res.send(`
     <h1>Minecraft Bot Control</h1>
 
+    <h2>Start Bot</h2>
+
+    <form action="/start" method="POST">
+      <input name="bot" placeholder="Deadmau5 or Prince">
+      <button type="submit">Start Bot</button>
+    </form>
+
+    <h2>Stop Bot</h2>
+
+    <form action="/stop" method="POST">
+      <input name="bot" placeholder="Deadmau5 or Prince">
+      <button type="submit">Stop Bot</button>
+    </form>
+
+    <h2>Send Chat / Command</h2>
+
     <form action="/send" method="POST">
       <input name="bot" placeholder="Deadmau5 or Prince">
-      <input name="msg" placeholder="Minecraft command">
+      <input name="msg" placeholder="message or command">
       <button type="submit">Send</button>
     </form>
 
-    <p>Examples:</p>
-    <p>/home farm</p>
-    <p>/msg player hi</p>
-    <p>/tp x y z</p>
   `);
 });
 
+app.post("/start", (req, res) => {
+
+  const botName = req.body.bot;
+
+  if (botName === "Deadmau5" && !deadBot) {
+    deadBot = createBot("Deadmau5");
+  }
+
+  if (botName === "Prince" && !princeBot) {
+    princeBot = createBot("Prince");
+  }
+
+  res.redirect("/");
+});
+
+app.post("/stop", (req, res) => {
+
+  const botName = req.body.bot;
+
+  if (botName === "Deadmau5" && deadBot) {
+    deadBot.quit();
+    deadBot = null;
+  }
+
+  if (botName === "Prince" && princeBot) {
+    princeBot.quit();
+    princeBot = null;
+  }
+
+  res.redirect("/");
+});
+
 app.post("/send", (req, res) => {
+
   const botName = req.body.bot;
   const msg = req.body.msg;
 
-  if (botName === "Deadmau5") {
+  if (botName === "Deadmau5" && deadBot) {
     deadBot.chat(msg);
   }
 
-  if (botName === "Prince") {
+  if (botName === "Prince" && princeBot) {
     princeBot.chat(msg);
   }
 
