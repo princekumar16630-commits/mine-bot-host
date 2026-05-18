@@ -49,7 +49,12 @@ function addLog(bot, msg) {
 
 function mcColor(text){
 
-  return text
+  text = text
+
+  // REMOVE ANSI CODES
+  .replace(/\x1B\[[0-9;]*m/g, "")
+
+  // MINECRAFT COLORS
   .replace(/§0/g,'<span style="color:black">')
   .replace(/§1/g,'<span style="color:#5555ff">')
   .replace(/§2/g,'<span style="color:#55ff55">')
@@ -66,6 +71,8 @@ function mcColor(text){
   .replace(/§d/g,'<span style="color:#ff55ff">')
   .replace(/§e/g,'<span style="color:#ffff55">')
   .replace(/§f/g,'<span style="color:white">');
+
+  return text + "</span>";
 }
 
 function createBot(name) {
@@ -97,20 +104,9 @@ function createBot(name) {
 
   });
 
-  bot.on("message", (jsonMsg) => {
+  bot.on("messagestr", (msg) => {
 
-    const raw = jsonMsg.toAnsi();
-
-    const clean = raw
-    .replace(/\u001b\[0m/g,"")
-    .replace(/\u001b\[31m/g,"§c")
-    .replace(/\u001b\[32m/g,"§a")
-    .replace(/\u001b\[33m/g,"§e")
-    .replace(/\u001b\[34m/g,"§9")
-    .replace(/\u001b\[35m/g,"§d")
-    .replace(/\u001b\[36m/g,"§b");
-
-    addLog(name, clean);
+    addLog(name, msg);
 
   });
 
