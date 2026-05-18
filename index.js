@@ -14,10 +14,16 @@ let princeLogs = [];
 
 function addLog(bot, msg) {
 
-  const time = new Date().toLocaleTimeString();
+  const time = new Date().toLocaleTimeString(
+    'en-IN',
+    {
+      timeZone: 'Asia/Kolkata',
+      hour12: true
+    }
+  );
 
   const formatted =
-  "[" + time + "] " + msg;
+  "[" + time + " IST] " + msg;
 
   if (bot === "Deadmau5") {
 
@@ -224,7 +230,7 @@ gap:30px;
 }
 
 .console{
-flex:2;
+flex:1.4;
 background:#05070d;
 height:450px;
 overflow:auto;
@@ -242,7 +248,7 @@ scroll-behavior:smooth;
 }
 
 .side{
-flex:1;
+flex:0.9;
 display:flex;
 flex-direction:column;
 gap:15px;
