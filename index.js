@@ -82,13 +82,11 @@ function createBot(name) {
 
   bot.on("end", () => {
 
-    addLog(name, "§cDisconnected from server");
+    addLog(name, "§cDisconnected");
 
     clearInterval(bot.jumpInterval);
 
     setTimeout(() => {
-
-      addLog(name, "§6Reconnecting...");
 
       if (name === "Deadmau5" && deadBot) {
         deadBot = createBot("Deadmau5");
@@ -111,21 +109,39 @@ function createBot(name) {
 
 function getInfo(bot){
 
-  if(!bot){
+  if(!bot || !bot.entity){
+
     return {
-      online:false
+      online:false,
+      health:0,
+      food:0,
+      x:0,
+      y:0,
+      z:0,
+      dimension:"Unknown",
+      players:[]
     };
+
   }
 
   return {
+
     online:true,
-    health:bot.health,
-    food:bot.food,
+
+    health:Math.floor(bot.health || 0),
+
+    food:Math.floor(bot.food || 0),
+
     x:Math.floor(bot.entity.position.x),
+
     y:Math.floor(bot.entity.position.y),
+
     z:Math.floor(bot.entity.position.z),
-    dimension:bot.game.dimension,
-    players:Object.keys(bot.players)
+
+    dimension:bot.game.dimension || "Unknown",
+
+    players:Object.keys(bot.players || {})
+
   };
 
 }
@@ -143,96 +159,97 @@ res.send(`
 <style>
 
 body{
-background:#0b0f1a;
+background:#0b1020;
 color:white;
 font-family:Arial;
+padding:25px;
 margin:0;
-padding:20px;
 }
 
 h1{
 text-align:center;
-font-size:45px;
-background:linear-gradient(90deg,#00bfff,#8a2be2);
+font-size:48px;
+background:linear-gradient(90deg,#00bfff,#8b5cf6);
 -webkit-background-clip:text;
 -webkit-text-fill-color:transparent;
+margin-bottom:40px;
 }
 
 .grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:20px;
+display:flex;
+flex-direction:column;
+gap:40px;
 }
 
 .panel{
-background:#111827;
-border-radius:20px;
-padding:20px;
-box-shadow:0 0 20px rgba(0,0,0,0.5);
+background:#121a2b;
+border-radius:25px;
+padding:25px;
+box-shadow:0 0 25px rgba(0,0,0,0.4);
+}
+
+.top{
+display:flex;
+gap:25px;
 }
 
 .console{
+flex:2;
 background:#05070d;
-height:350px;
+height:400px;
 overflow:auto;
 padding:15px;
-border-radius:15px;
+border-radius:18px;
 font-family:monospace;
-margin-bottom:15px;
-border:2px solid #1f2937;
+border:2px solid #1e293b;
+}
+
+.side{
+flex:1;
+display:flex;
+flex-direction:column;
+gap:15px;
+}
+
+.box{
+background:#1e293b;
+padding:15px;
+border-radius:15px;
 }
 
 input{
 width:100%;
-padding:12px;
+padding:14px;
 border:none;
 border-radius:12px;
-background:#1f2937;
+background:#1e293b;
 color:white;
-margin-bottom:10px;
+margin-top:15px;
 font-size:15px;
+box-sizing:border-box;
 }
 
 button{
 width:100%;
-padding:12px;
+padding:14px;
+margin-top:12px;
 border:none;
 border-radius:12px;
+background:linear-gradient(90deg,#00bfff,#8b5cf6);
+color:white;
+font-size:15px;
 font-weight:bold;
 cursor:pointer;
-margin-top:10px;
-font-size:15px;
-background:linear-gradient(90deg,#00bfff,#8a2be2);
-color:white;
 }
 
 button:hover{
 opacity:0.85;
 }
 
-.stats{
-background:#1f2937;
-padding:12px;
-border-radius:12px;
-margin-top:10px;
-line-height:1.8;
-}
-
 .players{
-background:#0f172a;
-padding:12px;
-border-radius:12px;
-margin-top:10px;
-max-height:180px;
+max-height:150px;
 overflow:auto;
-}
-
-.online{
-color:#00ff99;
-}
-
-.offline{
-color:#ff5555;
+line-height:1.8;
 }
 
 </style>
@@ -241,7 +258,7 @@ color:#ff5555;
 
 <body>
 
-<h1>⚡ Minecraft Bot Control ⚡</h1>
+<h1>⚡ Minecraft Bot Dashboard ⚡</h1>
 
 <div class="grid">
 
@@ -249,22 +266,32 @@ color:#ff5555;
 
 <h2>🎮 Deadmau5</h2>
 
+<div class="top">
+
 <div class="console" id="deadConsole"></div>
 
-<input id="deadMsg" placeholder="Type message or command">
+<div class="side">
 
-<button onclick="sendMsg('Deadmau5')">Send Message</button>
+<div class="box" id="deadStats"></div>
 
-<button id="deadToggle" onclick="toggleBot('Deadmau5')">
-Loading...
+<div class="box">
+<h3>👥 Players Online</h3>
+<div class="players" id="deadPlayers"></div>
+</div>
+
+</div>
+
+</div>
+
+<input id="deadMsg" placeholder="Type command or message">
+
+<button onclick="sendMsg('Deadmau5')">
+Send Message
 </button>
 
-<div class="stats" id="deadStats"></div>
-
-<div class="players">
-<h3>Players Online</h3>
-<div id="deadPlayers"></div>
-</div>
+<button id="deadToggle" onclick="toggleBot('Deadmau5')">
+Start Bot
+</button>
 
 </div>
 
@@ -272,22 +299,32 @@ Loading...
 
 <h2>🎮 Prince</h2>
 
+<div class="top">
+
 <div class="console" id="princeConsole"></div>
 
-<input id="princeMsg" placeholder="Type message or command">
+<div class="side">
 
-<button onclick="sendMsg('Prince')">Send Message</button>
+<div class="box" id="princeStats"></div>
 
-<button id="princeToggle" onclick="toggleBot('Prince')">
-Loading...
+<div class="box">
+<h3>👥 Players Online</h3>
+<div class="players" id="princePlayers"></div>
+</div>
+
+</div>
+
+</div>
+
+<input id="princeMsg" placeholder="Type command or message">
+
+<button onclick="sendMsg('Prince')">
+Send Message
 </button>
 
-<div class="stats" id="princeStats"></div>
-
-<div class="players">
-<h3>Players Online</h3>
-<div id="princePlayers"></div>
-</div>
+<button id="princeToggle" onclick="toggleBot('Prince')">
+Start Bot
+</button>
 
 </div>
 
@@ -306,27 +343,33 @@ async function refresh(){
   document.getElementById('princeConsole').innerHTML =
   data.prince.logs.join("<br>");
 
-  updateBot('dead',data.dead.info);
-  updateBot('prince',data.prince.info);
+  updateBot("dead", data.dead.info);
+  updateBot("prince", data.prince.info);
 
 }
 
-function updateBot(id,info){
+function updateBot(id, info){
 
-  document.getElementById(id+'Toggle').innerText =
-  info.online ? 'Stop Bot' : 'Start Bot';
+  document.getElementById(id + "Toggle").innerText =
+  info.online ? "Stop Bot" : "Start Bot";
 
-  document.getElementById(id+'Stats').innerHTML = info.online ? \`
-  ❤️ Health: \${info.health}<br>
-  🍗 Hunger: \${info.food}<br>
-  📍 Position: \${info.x}, \${info.y}, \${info.z}<br>
-  🌍 Dimension: \${info.dimension}
-  \` : '<span class="offline">Bot Offline</span>';
-
-  document.getElementById(id+'Players').innerHTML =
+  document.getElementById(id + "Stats").innerHTML =
   info.online
-  ? info.players.length + " Players Online<br><br>" + info.players.join("<br>")
-  : "Offline";
+  ?
+  "❤️ Health: " + info.health + "<br>" +
+  "🍗 Hunger: " + info.food + "<br>" +
+  "📍 Position: " + info.x + ", " + info.y + ", " + info.z + "<br>" +
+  "🌍 Dimension: " + info.dimension
+  :
+  "🔴 Offline";
+
+  document.getElementById(id + "Players").innerHTML =
+  info.players.length > 0
+  ?
+  "Online: " + info.players.length + "<br><br>" +
+  info.players.join("<br>")
+  :
+  "No players found";
 
 }
 
@@ -334,44 +377,54 @@ async function sendMsg(bot){
 
   const msg =
   document.getElementById(
-    bot === 'Deadmau5'
-    ? 'deadMsg'
-    : 'princeMsg'
+    bot === "Deadmau5"
+    ? "deadMsg"
+    : "princeMsg"
   ).value;
 
   await fetch('/send',{
+
     method:'POST',
+
     headers:{
       'Content-Type':'application/json'
     },
+
     body:JSON.stringify({
       bot:bot,
       msg:msg
     })
+
   });
 
 }
 
 async function toggleBot(bot){
 
-  const data = await fetch('/data').then(r=>r.json());
+  const res = await fetch('/data');
+  const data = await res.json();
 
   const online =
-  bot === 'Deadmau5'
+  bot === "Deadmau5"
   ? data.dead.info.online
   : data.prince.info.online;
 
   await fetch(
+
     online ? '/stop' : '/start',
+
     {
       method:'POST',
+
       headers:{
         'Content-Type':'application/json'
       },
+
       body:JSON.stringify({
         bot:bot
       })
     }
+
   );
 
 }
@@ -461,5 +514,5 @@ deadBot=createBot("Deadmau5");
 princeBot=createBot("Prince");
 
 app.listen(3000,"0.0.0.0",()=>{
-  console.log("Control panel running");
+  console.log("Dashboard running");
 });
