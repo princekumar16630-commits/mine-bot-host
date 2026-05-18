@@ -1,5 +1,325 @@
+const express = require("express");
+const mineflayer = require("mineflayer");
+
+const app = express();
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+let deadBot = null;
+let princeBot = null;
+
+let deadLogs = [];
+let princeLogs = [];
+
+function timeNow() {
+
+  return new Date().toLocaleTimeString(
+    "en-IN",
+    {
+      timeZone: "Asia/Kolkata",
+      hour12: true
+    }
+  );
+
+}
+
+function mcColor(text){
+
+  return text
+
+  .replace(/\x1B\[[0-9;]*m/g, "")
+
+  .replace(/§0/g,'<span style="color:black">')
+  .replace(/§1/g,'<span style="color:#5555ff">')
+  .replace(/§2/g,'<span style="color:#55ff55">')
+  .replace(/§3/g,'<span style="color:#55ffff">')
+  .replace(/§4/g,'<span style="color:#ff5555">')
+  .replace(/§5/g,'<span style="color:#ff55ff">')
+  .replace(/§6/g,'<span style="color:#ffaa00">')
+  .replace(/§7/g,'<span style="color:#aaaaaa">')
+  .replace(/§8/g,'<span style="color:#555555">')
+  .replace(/§9/g,'<span style="color:#5555ff">')
+  .replace(/§a/g,'<span style="color:#55ff55">')
+  .replace(/§b/g,'<span style="color:#55ffff">')
+  .replace(/§c/g,'<span style="color:#ff5555">')
+  .replace(/§d/g,'<span style="color:#ff55ff">')
+  .replace(/§e/g,'<span style="color:#ffff55">')
+  .replace(/§f/g,'<span style="color:white">')
+
+  + "</span>";
+
+}
+
+function addLog(bot,msg){
+
+  if(!msg) return;
+
+  msg = msg.trim();
+
+  if(msg.length < 1) return;
+
+  let sender = "SERVER";
+  let finalMsg = msg;
+
+  const normalChat =
+  msg.match(/^<([^>]+)>\s(.+)/);
+
+  if(normalChat){
+
+    sender = normalChat[1];
+    finalMsg = normalChat[2];
+
+  }
+
+  finalMsg =
+  finalMsg.replace(/\x1B\[[0-9;]*m/g,'');
+
+  const line = `
+  <div class="line">
+
+    <span class="time">
+      [${timeNow()}]
+    </span>
+
+    <span class="sender">
+      [${sender}]
+    </span>
+
+    <span class="msg">
+      ${mcColor(finalMsg)}
+    </span>
+
+  </div>
+  `;
+
+  if(bot === "Deadmau5"){
+
+    deadLogs.push(line);
+
+    if(deadLogs.length > 300){
+      deadLogs.shift();
+    }
+
+  }
+
+  if(bot === "Prince"){
+
+    princeLogs.push(line);
+
+    if(princeLogs.length > 300){
+      princeLogs.shift();
+    }
+
+  }
+
+}
+
+function createBot(name){
+
+  addLog(
+    name,
+    "§eConnecting to karmasmp.ddns.net:25565 ..."
+  );
+
+  const bot = mineflayer.createBot({
+
+    host:"karmasmp.ddns.net",
+
+    port:25565,
+
+    username:name
+
+  });
+
+  bot.online = false;
+
+  bot.on("login",()=>{
+
+    bot.online = true;
+
+    addLog(
+      name,
+      "§aConnected to server"
+    );
+
+    setTimeout(()=>{
+
+      bot.chat("/login 676769");
+
+      addLog(
+        name,
+        "§eExecuted /login"
+      );
+
+    },3000);
+
+    bot.jumpLoop = setInterval(()=>{
+
+      if(bot.entity){
+
+        bot.setControlState(
+          "jump",
+          true
+        );
+
+        setTimeout(()=>{
+
+          bot.setControlState(
+            "jump",
+            false
+          );
+
+        },400);
+
+      }
+
+    },30000);
+
+  });
+
+  bot.on("messagestr",(msg)=>{
+
+    addLog(name,msg);
+
+  });
+
+  bot.on("chat",(username,message)=>{
+
+    addLog(
+      name,
+      "<" + username + "> " + message
+    );
+
+  });
+
+  bot.on("playerJoined",(player)=>{
+
+    addLog(
+      name,
+      "§a" + player.username + " joined the game"
+    );
+
+  });
+
+  bot.on("playerLeft",(player)=>{
+
+    addLog(
+      name,
+      "§c" + player.username + " left the game"
+    );
+
+  });
+
+  bot.on("kicked",(reason)=>{
+
+    addLog(
+      name,
+      "§cKicked: " + reason
+    );
+
+  });
+
+  bot.on("end",()=>{
+
+    bot.online = false;
+
+    clearInterval(bot.jumpLoop);
+
+    addLog(
+      name,
+      "§cDisconnected from server"
+    );
+
+    setTimeout(()=>{
+
+      addLog(
+        name,
+        "§6Reconnecting in 15s ..."
+      );
+
+      if(name === "Deadmau5" && deadBot){
+
+        deadBot = createBot(
+          "Deadmau5"
+        );
+
+      }
+
+      if(name === "Prince" && princeBot){
+
+        princeBot = createBot(
+          "Prince"
+        );
+
+      }
+
+    },15000);
+
+  });
+
+  bot.on("error",(err)=>{
+
+    addLog(
+      name,
+      "§4ERROR: " + err.message
+    );
+
+  });
+
+  return bot;
+
+}
+
+function getInfo(bot){
+
+  if(!bot || !bot.entity){
+
+    return {
+
+      online:false,
+
+      health:0,
+
+      food:0,
+
+      dimension:"Unknown",
+
+      players:[]
+
+    };
+
+  }
+
+  return {
+
+    online:bot.online,
+
+    health:Math.floor(
+      bot.health || 0
+    ),
+
+    food:Math.floor(
+      bot.food || 0
+    ),
+
+    dimension:
+    bot.game.dimension || "Unknown",
+
+    players:Object.keys(
+      bot.players || {}
+    )
+
+  };
+
+}
+
+app.get("/",(req,res)=>{
+
 res.send(`
+
 <!DOCTYPE html>
+
 <html>
 
 <head>
@@ -22,24 +342,24 @@ overflow:hidden;
 }
 
 .topbar{
-height:44px;
+height:55px;
 background:#111827;
 border-bottom:1px solid #263041;
 display:flex;
 align-items:center;
 justify-content:space-between;
-padding:0 18px;
-font-size:14px;
+padding:0 20px;
 }
 
 .logo{
-font-size:22px;
+font-size:18px;
 font-weight:bold;
 color:#60a5fa;
 }
 
 .server{
 color:#9ca3af;
+font-size:14px;
 }
 
 .cards{
@@ -52,31 +372,32 @@ padding:14px;
 flex:1;
 background:#111827;
 border:1px solid #263041;
-border-radius:10px;
-padding:16px;
+border-radius:12px;
+padding:18px;
 }
 
 .cardtop{
 display:flex;
 justify-content:space-between;
 align-items:center;
-margin-bottom:12px;
+margin-bottom:10px;
 }
 
-.botname{
+.botnamebig{
 font-size:28px;
 font-weight:bold;
 }
 
 .status{
-padding:5px 12px;
+padding:6px 12px;
 border-radius:999px;
 font-size:12px;
 font-weight:bold;
+margin-right:10px;
 }
 
 .online{
-background:#064e3b;
+background:#063d2e;
 color:#34d399;
 }
 
@@ -85,18 +406,12 @@ background:#3f1111;
 color:#f87171;
 }
 
-.reconnecting{
-background:#4a3200;
-color:#fbbf24;
-}
-
 .smallbtn{
 border:none;
-padding:6px 12px;
-border-radius:7px;
+padding:8px 14px;
+border-radius:8px;
 font-weight:bold;
 cursor:pointer;
-margin-left:8px;
 }
 
 .start{
@@ -111,15 +426,42 @@ color:white;
 
 .stats{
 display:flex;
-gap:16px;
+gap:14px;
+font-size:14px;
+color:#d1d5db;
+}
+
+.playerbox{
+margin-top:12px;
+background:#0b1220;
+border:1px solid #263041;
+border-radius:10px;
+padding:10px;
 font-size:13px;
-color:#cbd5e1;
-margin-top:10px;
+color:#d1d5db;
+max-height:90px;
+overflow:auto;
+}
+
+.playercount{
+color:#60a5fa;
+font-weight:bold;
+margin-bottom:6px;
+}
+
+.playername{
+display:inline-block;
+background:#111827;
+border:1px solid #263041;
+padding:4px 8px;
+border-radius:999px;
+margin:3px;
+font-size:12px;
 }
 
 .consolewrap{
 padding:0 14px 14px 14px;
-height:calc(100vh - 180px);
+height:calc(100vh - 190px);
 display:flex;
 flex-direction:column;
 }
@@ -127,16 +469,15 @@ flex-direction:column;
 .tabs{
 display:flex;
 gap:8px;
-margin-bottom:10px;
+margin-bottom:12px;
 }
 
 .tab{
 background:#111827;
 border:1px solid #263041;
-padding:8px 14px;
-border-radius:7px;
+padding:10px 16px;
+border-radius:8px;
 cursor:pointer;
-font-size:13px;
 }
 
 .active{
@@ -147,12 +488,32 @@ background:#2563eb;
 flex:1;
 background:black;
 border:1px solid #263041;
-border-radius:10px;
-padding:14px;
+border-radius:12px;
+padding:10px 14px;
 overflow:auto;
 font-size:14px;
-line-height:1.6;
+line-height:1.25;
 white-space:pre-wrap;
+font-family:Consolas;
+}
+
+.line{
+margin-bottom:2px;
+}
+
+.time{
+color:#64748b;
+margin-right:8px;
+}
+
+.sender{
+color:#38bdf8;
+font-weight:bold;
+margin-right:8px;
+}
+
+.msg{
+display:inline;
 }
 
 .inputbar{
@@ -165,46 +526,21 @@ margin-top:12px;
 flex:1;
 background:#111827;
 border:1px solid #263041;
-border-radius:8px;
-padding:12px;
+border-radius:10px;
+padding:14px;
 color:white;
 outline:none;
 font-size:14px;
 }
 
 .send{
-width:90px;
+width:100px;
 background:#2563eb;
 border:none;
-border-radius:8px;
+border-radius:10px;
 color:white;
 font-weight:bold;
 cursor:pointer;
-}
-
-.line{
-margin-bottom:3px;
-}
-
-.time{
-color:#64748b;
-}
-
-.bot{
-color:#38bdf8;
-font-weight:bold;
-}
-
-.red{
-color:#f87171;
-}
-
-.green{
-color:#4ade80;
-}
-
-.yellow{
-color:#facc15;
 }
 
 </style>
@@ -231,14 +567,16 @@ karmasmp.ddns.net:25565 — 1.21.1 Offline Mode
 
 <div class="cardtop">
 
-<div class="botname">
+<div class="botnamebig">
 Deadmau5
 </div>
 
 <div>
 
-<span id="deadStatus" class="status reconnecting">
-RECONNECTING
+<span
+id="deadStatus"
+class="status offline">
+OFFLINE
 </span>
 
 <button
@@ -252,8 +590,16 @@ STOP
 
 </div>
 
-<div class="stats" id="deadStats">
+<div
+class="stats"
+id="deadStats">
 Loading...
+</div>
+
+<div
+class="playerbox"
+id="deadPlayers">
+No players
 </div>
 
 </div>
@@ -262,14 +608,16 @@ Loading...
 
 <div class="cardtop">
 
-<div class="botname">
+<div class="botnamebig">
 Prince
 </div>
 
 <div>
 
-<span id="princeStatus" class="status reconnecting">
-RECONNECTING
+<span
+id="princeStatus"
+class="status offline">
+OFFLINE
 </span>
 
 <button
@@ -283,8 +631,16 @@ STOP
 
 </div>
 
-<div class="stats" id="princeStats">
+<div
+class="stats"
+id="princeStats">
 Loading...
+</div>
+
+<div
+class="playerbox"
+id="princePlayers">
+No players
 </div>
 
 </div>
@@ -295,21 +651,29 @@ Loading...
 
 <div class="tabs">
 
-<div class="tab active" onclick="setTab('all')">
+<div
+class="tab active"
+onclick="setTab('all',event)">
 All
 </div>
 
-<div class="tab" onclick="setTab('Deadmau5')">
+<div
+class="tab"
+onclick="setTab('Deadmau5',event)">
 Deadmau5
 </div>
 
-<div class="tab" onclick="setTab('Prince')">
+<div
+class="tab"
+onclick="setTab('Prince',event)">
 Prince
 </div>
 
 </div>
 
-<div class="console" id="console">
+<div
+class="console"
+id="console">
 Loading...
 </div>
 
@@ -321,7 +685,9 @@ class="cmd"
 placeholder="Type Minecraft command..."
 autocomplete="off">
 
-<button class="send" onclick="sendCmd()">
+<button
+class="send"
+onclick="sendCmd()">
 SEND
 </button>
 
@@ -333,21 +699,25 @@ SEND
 
 let currentTab = "all";
 
-function setTab(tab){
+function setTab(tab,e){
 
 currentTab = tab;
 
-document.querySelectorAll('.tab')
+document
+.querySelectorAll('.tab')
 .forEach(t=>t.classList.remove('active'));
 
-event.target.classList.add('active');
+e.target.classList.add('active');
 
 }
 
 async function refresh(){
 
-const res = await fetch('/data');
-const data = await res.json();
+const res =
+await fetch('/data');
+
+const data =
+await res.json();
 
 updateBotUI(
 'dead',
@@ -378,8 +748,9 @@ logs = data.prince.logs;
 
 }
 
-document.getElementById('console')
-.innerHTML = logs.join("<br>");
+document
+.getElementById('console')
+.innerHTML = logs.join("");
 
 const consoleDiv =
 document.getElementById('console');
@@ -389,43 +760,73 @@ consoleDiv.scrollHeight;
 
 }
 
-function updateBotUI(id, info){
+function updateBotUI(id,info){
 
 const status =
-document.getElementById(id+'Status');
+document.getElementById(
+id+'Status'
+);
 
 const btn =
-document.getElementById(id+'Btn');
+document.getElementById(
+id+'Btn'
+);
 
 if(info.online){
 
 status.innerText = "ONLINE";
+
 status.className =
 "status online";
 
 btn.innerText = "STOP";
+
 btn.className =
 "smallbtn stop";
 
 }else{
 
 status.innerText = "OFFLINE";
+
 status.className =
 "status offline";
 
 btn.innerText = "START";
+
 btn.className =
 "smallbtn start";
 
 }
 
-document.getElementById(id+'Stats')
+document
+.getElementById(id+'Stats')
 .innerHTML =
 
 "❤️ " + info.health +
+
 " | 🍗 " + info.food +
+
 " | 🌍 " + info.dimension +
+
 " | 👥 " + info.players.length;
+
+document
+.getElementById(id+'Players')
+.innerHTML =
+
+'<div class="playercount">ONLINE PLAYERS (' +
+
+info.players.length +
+
+')</div>' +
+
+info.players.map(p =>
+
+'<span class="playername">' +
+p +
+'</span>'
+
+).join('');
 
 }
 
@@ -434,7 +835,8 @@ async function sendCmd(){
 const input =
 document.getElementById('cmd');
 
-const msg = input.value;
+const msg =
+input.value;
 
 if(!msg) return;
 
@@ -447,10 +849,14 @@ headers:{
 },
 
 body:JSON.stringify({
-bot:currentTab==="all"
+
+bot:
+currentTab==="all"
 ? "Deadmau5"
 : currentTab,
+
 msg:msg
+
 })
 
 });
@@ -461,7 +867,9 @@ input.value = "";
 
 document
 .getElementById('cmd')
-.addEventListener('keypress',e=>{
+.addEventListener(
+'keypress',
+e=>{
 
 if(e.key === 'Enter'){
 
@@ -473,8 +881,11 @@ sendCmd();
 
 async function toggleBot(bot){
 
-const res = await fetch('/data');
-const data = await res.json();
+const res =
+await fetch('/data');
+
+const data =
+await res.json();
 
 const online =
 bot==="Deadmau5"
@@ -482,16 +893,25 @@ bot==="Deadmau5"
 : data.prince.info.online;
 
 await fetch(
-online ? '/stop' : '/start',
+
+online
+? '/stop'
+: '/start',
+
 {
+
 method:'POST',
+
 headers:{
 'Content-Type':'application/json'
 },
+
 body:JSON.stringify({
 bot:bot
 })
+
 }
+
 );
 
 }
@@ -505,4 +925,128 @@ refresh();
 </body>
 
 </html>
+
 `);
+
+});
+
+app.get("/data",(req,res)=>{
+
+  res.json({
+
+    dead:{
+      logs:deadLogs,
+      info:getInfo(deadBot)
+    },
+
+    prince:{
+      logs:princeLogs,
+      info:getInfo(princeBot)
+    }
+
+  });
+
+});
+
+app.post("/send",(req,res)=>{
+
+  const bot = req.body.bot;
+
+  const msg = req.body.msg;
+
+  if(
+    bot==="Deadmau5"
+    && deadBot
+  ){
+
+    deadBot.chat(msg);
+
+  }
+
+  if(
+    bot==="Prince"
+    && princeBot
+  ){
+
+    princeBot.chat(msg);
+
+  }
+
+  res.sendStatus(200);
+
+});
+
+app.post("/start",(req,res)=>{
+
+  const bot=req.body.bot;
+
+  if(
+    bot==="Deadmau5"
+    && !deadBot
+  ){
+
+    deadBot =
+    createBot("Deadmau5");
+
+  }
+
+  if(
+    bot==="Prince"
+    && !princeBot
+  ){
+
+    princeBot =
+    createBot("Prince");
+
+  }
+
+  res.sendStatus(200);
+
+});
+
+app.post("/stop",(req,res)=>{
+
+  const bot=req.body.bot;
+
+  if(
+    bot==="Deadmau5"
+    && deadBot
+  ){
+
+    deadBot.quit();
+
+    deadBot=null;
+
+  }
+
+  if(
+    bot==="Prince"
+    && princeBot
+  ){
+
+    princeBot.quit();
+
+    princeBot=null;
+
+  }
+
+  res.sendStatus(200);
+
+});
+
+deadBot =
+createBot("Deadmau5");
+
+princeBot =
+createBot("Prince");
+
+app.listen(
+3000,
+"0.0.0.0",
+()=>{
+
+console.log(
+"Dashboard running"
+);
+
+});
