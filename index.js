@@ -13,40 +13,14 @@ let deadLogs = [];
 let princeLogs = [];
 
 function timeNow() {
-  return new Date().toLocaleTimeString("en-IN", {
-    timeZone: "Asia/Kolkata",
-    hour12: true
-  });
-}
 
-function addLog(bot, msg) {
-
-  const line =
-  `<div class="line">
-    <span class="time">[${timeNow()}]</span>
-    <span class="bot">[${bot}]</span>
-    ${mcColor(msg)}
-  </div>`;
-
-  if (bot === "Deadmau5") {
-
-    deadLogs.push(line);
-
-    if (deadLogs.length > 250) {
-      deadLogs.shift();
+  return new Date().toLocaleTimeString(
+    "en-IN",
+    {
+      timeZone: "Asia/Kolkata",
+      hour12: true
     }
-
-  }
-
-  if (bot === "Prince") {
-
-    princeLogs.push(line);
-
-    if (princeLogs.length > 250) {
-      princeLogs.shift();
-    }
-
-  }
+  );
 
 }
 
@@ -77,87 +51,193 @@ function mcColor(text){
 
 }
 
-function createBot(name) {
+function addLog(bot,msg){
 
-  addLog(name, "§eConnecting to karmasmp.ddns.net:25565 ...");
+  if(!msg) return;
+
+  msg = msg.trim();
+
+  if(msg.length < 1) return;
+
+  const line = `
+  <div class="line">
+    <span class="time">[${timeNow()}]</span>
+    <span class="botname">[${bot}]</span>
+    <span class="msg">${mcColor(msg)}</span>
+  </div>
+  `;
+
+  if(bot === "Deadmau5"){
+
+    deadLogs.push(line);
+
+    if(deadLogs.length > 250){
+      deadLogs.shift();
+    }
+
+  }
+
+  if(bot === "Prince"){
+
+    princeLogs.push(line);
+
+    if(princeLogs.length > 250){
+      princeLogs.shift();
+    }
+
+  }
+
+}
+
+function createBot(name){
+
+  addLog(
+    name,
+    "§eConnecting to karmasmp.ddns.net:25565 ..."
+  );
 
   const bot = mineflayer.createBot({
-    host: "karmasmp.ddns.net",
-    port: 25565,
-    username: name
+
+    host:"karmasmp.ddns.net",
+
+    port:25565,
+
+    username:name
+
   });
 
   bot.online = false;
 
-  bot.on("login", () => {
+  bot.on("login",()=>{
 
     bot.online = true;
 
-    addLog(name, "§aConnected to server");
+    addLog(
+      name,
+      "§aConnected to server"
+    );
 
-    setTimeout(() => {
+    setTimeout(()=>{
 
       bot.chat("/login 676769");
 
-      addLog(name, "§eExecuted /login");
+      addLog(
+        name,
+        "§eExecuted /login"
+      );
 
-    }, 3000);
+    },3000);
 
-    bot.jumpLoop = setInterval(() => {
+    bot.jumpLoop = setInterval(()=>{
 
       if(bot.entity){
 
-        bot.setControlState("jump", true);
+        bot.setControlState(
+          "jump",
+          true
+        );
 
-        setTimeout(() => {
-          bot.setControlState("jump", false);
-        }, 400);
+        setTimeout(()=>{
+
+          bot.setControlState(
+            "jump",
+            false
+          );
+
+        },400);
 
       }
 
-    }, 30000);
+    },30000);
 
   });
 
-  bot.on("messagestr", (msg) => {
+  bot.on("messagestr",(msg)=>{
 
-    addLog(name, msg);
+    addLog(name,msg);
 
   });
 
-  bot.on("end", () => {
+  bot.on("chat",(username,message)=>{
+
+    addLog(
+      name,
+      "§b<" + username + "> §f" + message
+    );
+
+  });
+
+  bot.on("playerJoined",(player)=>{
+
+    addLog(
+      name,
+      "§a" + player.username + " joined the game"
+    );
+
+  });
+
+  bot.on("playerLeft",(player)=>{
+
+    addLog(
+      name,
+      "§c" + player.username + " left the game"
+    );
+
+  });
+
+  bot.on("kicked",(reason)=>{
+
+    addLog(
+      name,
+      "§cKicked: " + reason
+    );
+
+  });
+
+  bot.on("end",()=>{
 
     bot.online = false;
 
-    addLog(name, "§cDisconnected from server");
-
     clearInterval(bot.jumpLoop);
 
-    setTimeout(() => {
+    addLog(
+      name,
+      "§cDisconnected from server"
+    );
 
-      addLog(name, "§6Reconnecting in 15s ...");
+    setTimeout(()=>{
+
+      addLog(
+        name,
+        "§6Reconnecting in 15s ..."
+      );
 
       if(name === "Deadmau5" && deadBot){
-        deadBot = createBot("Deadmau5");
+
+        deadBot = createBot(
+          "Deadmau5"
+        );
+
       }
 
       if(name === "Prince" && princeBot){
-        princeBot = createBot("Prince");
+
+        princeBot = createBot(
+          "Prince"
+        );
+
       }
 
-    }, 15000);
+    },15000);
 
   });
 
-  bot.on("kicked", (reason) => {
+  bot.on("error",(err)=>{
 
-    addLog(name, "§cKicked: " + reason);
-
-  });
-
-  bot.on("error", (err) => {
-
-    addLog(name, "§4ERROR: " + err.message);
+    addLog(
+      name,
+      "§4ERROR: " + err.message
+    );
 
   });
 
@@ -170,11 +250,17 @@ function getInfo(bot){
   if(!bot || !bot.entity){
 
     return {
+
       online:false,
+
       health:0,
+
       food:0,
+
       dimension:"Unknown",
+
       players:[]
+
     };
 
   }
@@ -183,23 +269,31 @@ function getInfo(bot){
 
     online:bot.online,
 
-    health:Math.floor(bot.health || 0),
+    health:Math.floor(
+      bot.health || 0
+    ),
 
-    food:Math.floor(bot.food || 0),
+    food:Math.floor(
+      bot.food || 0
+    ),
 
-    dimension:bot.game.dimension || "Unknown",
+    dimension:
+    bot.game.dimension || "Unknown",
 
-    players:Object.keys(bot.players || {})
+    players:Object.keys(
+      bot.players || {}
+    )
 
   };
 
 }
 
-app.get("/", (req, res) => {
+app.get("/",(req,res)=>{
 
 res.send(`
 
 <!DOCTYPE html>
+
 <html>
 
 <head>
@@ -222,24 +316,24 @@ overflow:hidden;
 }
 
 .topbar{
-height:44px;
+height:55px;
 background:#111827;
 border-bottom:1px solid #263041;
 display:flex;
 align-items:center;
 justify-content:space-between;
-padding:0 18px;
-font-size:14px;
+padding:0 20px;
 }
 
 .logo{
-font-size:22px;
+font-size:18px;
 font-weight:bold;
 color:#60a5fa;
 }
 
 .server{
 color:#9ca3af;
+font-size:14px;
 }
 
 .cards{
@@ -252,31 +346,32 @@ padding:14px;
 flex:1;
 background:#111827;
 border:1px solid #263041;
-border-radius:10px;
-padding:16px;
+border-radius:12px;
+padding:18px;
 }
 
 .cardtop{
 display:flex;
 justify-content:space-between;
 align-items:center;
-margin-bottom:12px;
+margin-bottom:10px;
 }
 
-.botname{
+.botnamebig{
 font-size:28px;
 font-weight:bold;
 }
 
 .status{
-padding:5px 12px;
+padding:6px 12px;
 border-radius:999px;
 font-size:12px;
 font-weight:bold;
+margin-right:10px;
 }
 
 .online{
-background:#064e3b;
+background:#063d2e;
 color:#34d399;
 }
 
@@ -287,11 +382,10 @@ color:#f87171;
 
 .smallbtn{
 border:none;
-padding:6px 12px;
-border-radius:7px;
+padding:8px 14px;
+border-radius:8px;
 font-weight:bold;
 cursor:pointer;
-margin-left:8px;
 }
 
 .start{
@@ -306,15 +400,14 @@ color:white;
 
 .stats{
 display:flex;
-gap:16px;
-font-size:13px;
-color:#cbd5e1;
-margin-top:10px;
+gap:14px;
+font-size:14px;
+color:#d1d5db;
 }
 
 .consolewrap{
 padding:0 14px 14px 14px;
-height:calc(100vh - 180px);
+height:calc(100vh - 190px);
 display:flex;
 flex-direction:column;
 }
@@ -322,16 +415,15 @@ flex-direction:column;
 .tabs{
 display:flex;
 gap:8px;
-margin-bottom:10px;
+margin-bottom:12px;
 }
 
 .tab{
 background:#111827;
 border:1px solid #263041;
-padding:8px 14px;
-border-radius:7px;
+padding:10px 16px;
+border-radius:8px;
 cursor:pointer;
-font-size:13px;
 }
 
 .active{
@@ -342,12 +434,32 @@ background:#2563eb;
 flex:1;
 background:black;
 border:1px solid #263041;
-border-radius:10px;
-padding:14px;
+border-radius:12px;
+padding:10px 14px;
 overflow:auto;
 font-size:14px;
-line-height:1.6;
+line-height:1.25;
 white-space:pre-wrap;
+font-family:Consolas;
+}
+
+.line{
+margin-bottom:1px;
+}
+
+.time{
+color:#64748b;
+margin-right:8px;
+}
+
+.botname{
+color:#38bdf8;
+font-weight:bold;
+margin-right:8px;
+}
+
+.msg{
+display:inline;
 }
 
 .inputbar{
@@ -360,34 +472,21 @@ margin-top:12px;
 flex:1;
 background:#111827;
 border:1px solid #263041;
-border-radius:8px;
-padding:12px;
+border-radius:10px;
+padding:14px;
 color:white;
 outline:none;
 font-size:14px;
 }
 
 .send{
-width:90px;
+width:100px;
 background:#2563eb;
 border:none;
-border-radius:8px;
+border-radius:10px;
 color:white;
 font-weight:bold;
 cursor:pointer;
-}
-
-.line{
-margin-bottom:4px;
-}
-
-.time{
-color:#64748b;
-}
-
-.bot{
-color:#38bdf8;
-font-weight:bold;
 }
 
 </style>
@@ -414,13 +513,15 @@ karmasmp.ddns.net:25565 — 1.21.1 Offline Mode
 
 <div class="cardtop">
 
-<div class="botname">
+<div class="botnamebig">
 Deadmau5
 </div>
 
 <div>
 
-<span id="deadStatus" class="status offline">
+<span
+id="deadStatus"
+class="status offline">
 OFFLINE
 </span>
 
@@ -435,7 +536,9 @@ STOP
 
 </div>
 
-<div class="stats" id="deadStats">
+<div
+class="stats"
+id="deadStats">
 Loading...
 </div>
 
@@ -445,13 +548,15 @@ Loading...
 
 <div class="cardtop">
 
-<div class="botname">
+<div class="botnamebig">
 Prince
 </div>
 
 <div>
 
-<span id="princeStatus" class="status offline">
+<span
+id="princeStatus"
+class="status offline">
 OFFLINE
 </span>
 
@@ -466,7 +571,9 @@ STOP
 
 </div>
 
-<div class="stats" id="princeStats">
+<div
+class="stats"
+id="princeStats">
 Loading...
 </div>
 
@@ -478,21 +585,29 @@ Loading...
 
 <div class="tabs">
 
-<div class="tab active" onclick="setTab('all',event)">
+<div
+class="tab active"
+onclick="setTab('all',event)">
 All
 </div>
 
-<div class="tab" onclick="setTab('Deadmau5',event)">
+<div
+class="tab"
+onclick="setTab('Deadmau5',event)">
 Deadmau5
 </div>
 
-<div class="tab" onclick="setTab('Prince',event)">
+<div
+class="tab"
+onclick="setTab('Prince',event)">
 Prince
 </div>
 
 </div>
 
-<div class="console" id="console">
+<div
+class="console"
+id="console">
 Loading...
 </div>
 
@@ -504,7 +619,9 @@ class="cmd"
 placeholder="Type Minecraft command..."
 autocomplete="off">
 
-<button class="send" onclick="sendCmd()">
+<button
+class="send"
+onclick="sendCmd()">
 SEND
 </button>
 
@@ -520,7 +637,8 @@ function setTab(tab,e){
 
 currentTab = tab;
 
-document.querySelectorAll('.tab')
+document
+.querySelectorAll('.tab')
 .forEach(t=>t.classList.remove('active'));
 
 e.target.classList.add('active');
@@ -529,8 +647,11 @@ e.target.classList.add('active');
 
 async function refresh(){
 
-const res = await fetch('/data');
-const data = await res.json();
+const res =
+await fetch('/data');
+
+const data =
+await res.json();
 
 updateBotUI(
 'dead',
@@ -561,7 +682,8 @@ logs = data.prince.logs;
 
 }
 
-document.getElementById('console')
+document
+.getElementById('console')
 .innerHTML = logs.join("");
 
 const consoleDiv =
@@ -572,42 +694,54 @@ consoleDiv.scrollHeight;
 
 }
 
-function updateBotUI(id, info){
+function updateBotUI(id,info){
 
 const status =
-document.getElementById(id+'Status');
+document.getElementById(
+id+'Status'
+);
 
 const btn =
-document.getElementById(id+'Btn');
+document.getElementById(
+id+'Btn'
+);
 
 if(info.online){
 
 status.innerText = "ONLINE";
+
 status.className =
 "status online";
 
 btn.innerText = "STOP";
+
 btn.className =
 "smallbtn stop";
 
 }else{
 
 status.innerText = "OFFLINE";
+
 status.className =
 "status offline";
 
 btn.innerText = "START";
+
 btn.className =
 "smallbtn start";
 
 }
 
-document.getElementById(id+'Stats')
+document
+.getElementById(id+'Stats')
 .innerHTML =
 
 "❤️ " + info.health +
+
 " | 🍗 " + info.food +
+
 " | 🌍 " + info.dimension +
+
 " | 👥 " + info.players.length;
 
 }
@@ -617,7 +751,8 @@ async function sendCmd(){
 const input =
 document.getElementById('cmd');
 
-const msg = input.value;
+const msg =
+input.value;
 
 if(!msg) return;
 
@@ -630,10 +765,14 @@ headers:{
 },
 
 body:JSON.stringify({
-bot:currentTab==="all"
+
+bot:
+currentTab==="all"
 ? "Deadmau5"
 : currentTab,
+
 msg:msg
+
 })
 
 });
@@ -644,7 +783,9 @@ input.value = "";
 
 document
 .getElementById('cmd')
-.addEventListener('keypress',e=>{
+.addEventListener(
+'keypress',
+e=>{
 
 if(e.key === 'Enter'){
 
@@ -656,8 +797,11 @@ sendCmd();
 
 async function toggleBot(bot){
 
-const res = await fetch('/data');
-const data = await res.json();
+const res =
+await fetch('/data');
+
+const data =
+await res.json();
 
 const online =
 bot==="Deadmau5"
@@ -665,16 +809,25 @@ bot==="Deadmau5"
 : data.prince.info.online;
 
 await fetch(
-online ? '/stop' : '/start',
+
+online
+? '/stop'
+: '/start',
+
 {
+
 method:'POST',
+
 headers:{
 'Content-Type':'application/json'
 },
+
 body:JSON.stringify({
 bot:bot
 })
+
 }
+
 );
 
 }
@@ -714,21 +867,34 @@ app.get("/data",(req,res)=>{
 app.post("/send",(req,res)=>{
 
   const bot = req.body.bot;
+
   const msg = req.body.msg;
 
-  if(bot==="Deadmau5" && deadBot){
+  if(
+    bot==="Deadmau5"
+    && deadBot
+  ){
 
     deadBot.chat(msg);
 
-    addLog(bot,"§bYOU: "+msg);
+    addLog(
+      bot,
+      "§bYOU: " + msg
+    );
 
   }
 
-  if(bot==="Prince" && princeBot){
+  if(
+    bot==="Prince"
+    && princeBot
+  ){
 
     princeBot.chat(msg);
 
-    addLog(bot,"§bYOU: "+msg);
+    addLog(
+      bot,
+      "§bYOU: " + msg
+    );
 
   }
 
@@ -740,12 +906,24 @@ app.post("/start",(req,res)=>{
 
   const bot=req.body.bot;
 
-  if(bot==="Deadmau5" && !deadBot){
-    deadBot=createBot("Deadmau5");
+  if(
+    bot==="Deadmau5"
+    && !deadBot
+  ){
+
+    deadBot =
+    createBot("Deadmau5");
+
   }
 
-  if(bot==="Prince" && !princeBot){
-    princeBot=createBot("Prince");
+  if(
+    bot==="Prince"
+    && !princeBot
+  ){
+
+    princeBot =
+    createBot("Prince");
+
   }
 
   res.sendStatus(200);
@@ -756,7 +934,10 @@ app.post("/stop",(req,res)=>{
 
   const bot=req.body.bot;
 
-  if(bot==="Deadmau5" && deadBot){
+  if(
+    bot==="Deadmau5"
+    && deadBot
+  ){
 
     deadBot.quit();
 
@@ -764,7 +945,10 @@ app.post("/stop",(req,res)=>{
 
   }
 
-  if(bot==="Prince" && princeBot){
+  if(
+    bot==="Prince"
+    && princeBot
+  ){
 
     princeBot.quit();
 
@@ -776,11 +960,19 @@ app.post("/stop",(req,res)=>{
 
 });
 
-deadBot=createBot("Deadmau5");
-princeBot=createBot("Prince");
+deadBot =
+createBot("Deadmau5");
 
-app.listen(3000,"0.0.0.0",()=>{
+princeBot =
+createBot("Prince");
 
-  console.log("Dashboard running");
+app.listen(
+3000,
+"0.0.0.0",
+()=>{
+
+console.log(
+"Dashboard running"
+);
 
 });
