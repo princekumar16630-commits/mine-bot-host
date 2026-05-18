@@ -14,14 +14,29 @@ let princeLogs = [];
 
 function addLog(bot, msg) {
 
+  const time = new Date().toLocaleTimeString();
+
+  const formatted =
+  "[" + time + "] " + msg;
+
   if (bot === "Deadmau5") {
-    deadLogs.push(msg);
-    if (deadLogs.length > 100) deadLogs.shift();
+
+    deadLogs.push(formatted);
+
+    if (deadLogs.length > 150) {
+      deadLogs.shift();
+    }
+
   }
 
   if (bot === "Prince") {
-    princeLogs.push(msg);
-    if (princeLogs.length > 100) princeLogs.shift();
+
+    princeLogs.push(formatted);
+
+    if (princeLogs.length > 150) {
+      princeLogs.shift();
+    }
+
   }
 
 }
@@ -30,20 +45,20 @@ function mcColor(text){
 
   return text
   .replace(/§0/g,'<span style="color:black">')
-  .replace(/§1/g,'<span style="color:darkblue">')
-  .replace(/§2/g,'<span style="color:green">')
-  .replace(/§3/g,'<span style="color:cyan">')
-  .replace(/§4/g,'<span style="color:red">')
-  .replace(/§5/g,'<span style="color:purple">')
-  .replace(/§6/g,'<span style="color:orange">')
-  .replace(/§7/g,'<span style="color:lightgray">')
-  .replace(/§8/g,'<span style="color:gray">')
-  .replace(/§9/g,'<span style="color:blue">')
-  .replace(/§a/g,'<span style="color:lime">')
-  .replace(/§b/g,'<span style="color:aqua">')
+  .replace(/§1/g,'<span style="color:#5555ff">')
+  .replace(/§2/g,'<span style="color:#55ff55">')
+  .replace(/§3/g,'<span style="color:#55ffff">')
+  .replace(/§4/g,'<span style="color:#ff5555">')
+  .replace(/§5/g,'<span style="color:#ff55ff">')
+  .replace(/§6/g,'<span style="color:#ffaa00">')
+  .replace(/§7/g,'<span style="color:#aaaaaa">')
+  .replace(/§8/g,'<span style="color:#555555">')
+  .replace(/§9/g,'<span style="color:#5555ff">')
+  .replace(/§a/g,'<span style="color:#55ff55">')
+  .replace(/§b/g,'<span style="color:#55ffff">')
   .replace(/§c/g,'<span style="color:#ff5555">')
-  .replace(/§d/g,'<span style="color:pink">')
-  .replace(/§e/g,'<span style="color:yellow">')
+  .replace(/§d/g,'<span style="color:#ff55ff">')
+  .replace(/§e/g,'<span style="color:#ffff55">')
   .replace(/§f/g,'<span style="color:white">');
 }
 
@@ -76,17 +91,32 @@ function createBot(name) {
 
   });
 
-  bot.on("messagestr", (msg) => {
-    addLog(name, msg);
+  bot.on("message", (jsonMsg) => {
+
+    const raw = jsonMsg.toAnsi();
+
+    const clean = raw
+    .replace(/\u001b\[0m/g,"")
+    .replace(/\u001b\[31m/g,"§c")
+    .replace(/\u001b\[32m/g,"§a")
+    .replace(/\u001b\[33m/g,"§e")
+    .replace(/\u001b\[34m/g,"§9")
+    .replace(/\u001b\[35m/g,"§d")
+    .replace(/\u001b\[36m/g,"§b");
+
+    addLog(name, clean);
+
   });
 
   bot.on("end", () => {
 
-    addLog(name, "§cDisconnected");
+    addLog(name, "§cDisconnected from server");
 
     clearInterval(bot.jumpInterval);
 
     setTimeout(() => {
+
+      addLog(name, "§6Reconnecting...");
 
       if (name === "Deadmau5" && deadBot) {
         deadBot = createBot("Deadmau5");
@@ -154,7 +184,7 @@ res.send(`
 
 <head>
 
-<title>Minecraft Control</title>
+<title>Minecraft Dashboard</title>
 
 <style>
 
@@ -169,7 +199,7 @@ margin:0;
 h1{
 text-align:center;
 font-size:48px;
-background:linear-gradient(90deg,#00bfff,#8b5cf6);
+background:linear-gradient(90deg,#2563eb,#7c3aed);
 -webkit-background-clip:text;
 -webkit-text-fill-color:transparent;
 margin-bottom:40px;
@@ -190,18 +220,25 @@ box-shadow:0 0 25px rgba(0,0,0,0.4);
 
 .top{
 display:flex;
-gap:25px;
+gap:30px;
 }
 
 .console{
 flex:2;
 background:#05070d;
-height:400px;
+height:450px;
 overflow:auto;
 padding:15px;
 border-radius:18px;
-font-family:monospace;
+font-family:Consolas,monospace;
+font-size:14px;
 border:2px solid #1e293b;
+box-shadow:
+inset 0 0 20px rgba(0,0,0,0.8),
+0 0 15px rgba(0,191,255,0.15);
+line-height:1.6;
+white-space:pre-wrap;
+scroll-behavior:smooth;
 }
 
 .side{
@@ -215,6 +252,12 @@ gap:15px;
 background:#1e293b;
 padding:15px;
 border-radius:15px;
+}
+
+.players{
+max-height:180px;
+overflow:auto;
+line-height:1.8;
 }
 
 input{
@@ -234,22 +277,23 @@ width:100%;
 padding:14px;
 margin-top:12px;
 border:none;
-border-radius:12px;
-background:linear-gradient(90deg,#00bfff,#8b5cf6);
+border-radius:14px;
+background:linear-gradient(90deg,#2563eb,#7c3aed);
 color:white;
 font-size:15px;
 font-weight:bold;
 cursor:pointer;
+transition:0.2s;
+box-shadow:0 0 15px rgba(59,130,246,0.35);
 }
 
 button:hover{
-opacity:0.85;
+transform:translateY(-2px);
+box-shadow:0 0 20px rgba(124,58,237,0.55);
 }
 
-.players{
-max-height:150px;
-overflow:auto;
-line-height:1.8;
+button:active{
+transform:scale(0.98);
 }
 
 </style>
@@ -275,8 +319,11 @@ line-height:1.8;
 <div class="box" id="deadStats"></div>
 
 <div class="box">
+
 <h3>👥 Players Online</h3>
+
 <div class="players" id="deadPlayers"></div>
+
 </div>
 
 </div>
@@ -286,11 +333,11 @@ line-height:1.8;
 <input id="deadMsg" placeholder="Type command or message">
 
 <button onclick="sendMsg('Deadmau5')">
-Send Message
+⚡ Execute Command
 </button>
 
 <button id="deadToggle" onclick="toggleBot('Deadmau5')">
-Start Bot
+Loading...
 </button>
 
 </div>
@@ -308,8 +355,11 @@ Start Bot
 <div class="box" id="princeStats"></div>
 
 <div class="box">
+
 <h3>👥 Players Online</h3>
+
 <div class="players" id="princePlayers"></div>
+
 </div>
 
 </div>
@@ -319,11 +369,11 @@ Start Bot
 <input id="princeMsg" placeholder="Type command or message">
 
 <button onclick="sendMsg('Prince')">
-Send Message
+⚡ Execute Command
 </button>
 
 <button id="princeToggle" onclick="toggleBot('Prince')">
-Start Bot
+Loading...
 </button>
 
 </div>
@@ -350,8 +400,24 @@ async function refresh(){
 
 function updateBot(id, info){
 
-  document.getElementById(id + "Toggle").innerText =
-  info.online ? "Stop Bot" : "Start Bot";
+  const btn =
+  document.getElementById(id + "Toggle");
+
+  if(info.online){
+
+    btn.innerText = "🛑 Stop Bot";
+
+    btn.style.background =
+    "linear-gradient(90deg,#ef4444,#dc2626)";
+
+  }else{
+
+    btn.innerText = "🚀 Start Bot";
+
+    btn.style.background =
+    "linear-gradient(90deg,#2563eb,#7c3aed)";
+
+  }
 
   document.getElementById(id + "Stats").innerHTML =
   info.online
@@ -429,7 +495,7 @@ async function toggleBot(bot){
 
 }
 
-setInterval(refresh,1000);
+setInterval(refresh,500);
 
 </script>
 
