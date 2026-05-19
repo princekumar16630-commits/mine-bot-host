@@ -6,8 +6,6 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-let activeConsole = "Deadmau5";
-
 let deadBot = null;
 let princeBot = null;
 
@@ -140,7 +138,7 @@ function createBot(name) {
 
   bot.online = false;
 
-  bot.on("login", () => {
+  bot.once("spawn", () => {
 
     bot.online = true;
 
@@ -817,18 +815,64 @@ app.get("/data", (req, res) => {
 
 app.post("/send", (req, res) => {
 
-  const bot = req.body.bot;
+  const botName = req.body.bot;
   const msg = req.body.msg;
 
-  if (bot === "Deadmau5" && deadBot) {
-    deadBot.chat(msg);
+  let bot = null;
+
+  if (botName === "Deadmau5") {
+    bot = deadBot;
   }
 
-  if (bot === "Prince" && princeBot) {
-    princeBot.chat(msg);
+  if (botName === "Prince") {
+    bot = princeBot;
   }
 
-  res.sendStatus(200);
+  if (!bot) {
+
+    addLog(
+      botName,
+      "§cBot offline"
+    );
+
+    return res.sendStatus(404);
+
+  }
+
+  if (!bot.entity) {
+
+    addLog(
+      botName,
+      "§6Bot not ready yet"
+    );
+
+    return res.sendStatus(400);
+
+  }
+
+  try {
+
+    bot.chat(msg.toString());
+
+    addLog(
+      botName,
+      "§b[YOU] " + msg
+    );
+
+    res.sendStatus(200);
+
+  } catch (err) {
+
+    addLog(
+      botName,
+      "§cChat send failed"
+    );
+
+    console.log(err);
+
+    res.sendStatus(500);
+
+  }
 
 });
 
