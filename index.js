@@ -953,7 +953,7 @@ app.post("/attack", (req, res) => {
 
           && e.position.distanceTo(
             bot.entity.position
-          ) <= 4
+          ) <= 6
 
         );
 
@@ -978,13 +978,15 @@ app.post("/attack", (req, res) => {
       await bot.lookAt(
         target.position.offset(
           0,
-          target.height,
+          1,
           0
         ),
         true
       );
 
       bot.attack(target);
+
+      bot.swingArm("right");
 
     } catch(err){
 
