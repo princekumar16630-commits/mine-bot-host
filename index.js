@@ -1,13 +1,10 @@
 const express = require("express");
 const mineflayer = require("mineflayer");
-const pvp = require("mineflayer-pvp").plugin;
 
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-let activeConsole = "Deadmau5";
 
 let deadBot = null;
 let princeBot = null;
@@ -104,19 +101,6 @@ function addLog(botName, msg) {
 
     finalMsg = normal[2];
 
-  } else {
-
-    const split = msg.split(" ");
-
-    if (split.length > 1) {
-
-      sender = split[0];
-
-      finalMsg =
-      msg.substring(sender.length);
-
-    }
-
   }
 
   finalMsg = mcColor(finalMsg);
@@ -155,7 +139,7 @@ function createBot(name, password) {
 
   addLog(
     name,
-    "§eConnecting to server..."
+    "§eConnecting..."
   );
 
   const bot = mineflayer.createBot({
@@ -168,8 +152,6 @@ function createBot(name, password) {
 
   });
 
-  bot.loadPlugin(pvp);
-
   bot.online = false;
 
   bot.once("spawn", () => {
@@ -178,7 +160,7 @@ function createBot(name, password) {
 
     addLog(
       name,
-      "§aConnected to server"
+      "§aConnected"
     );
 
     setTimeout(() => {
@@ -277,15 +259,6 @@ function createBot(name, password) {
 
   });
 
-  bot.on("kicked", (reason) => {
-
-    addLog(
-      name,
-      "§cKicked: " + reason
-    );
-
-  });
-
   bot.on("error", (err) => {
 
     addLog(
@@ -380,28 +353,9 @@ justify-content:space-between;
 padding:0 25px;
 }
 
-.leftTop{
-display:flex;
-flex-direction:column;
-gap:3px;
-}
-
 .logo{
-font-size:34px;
+font-size:32px;
 font-weight:bold;
-}
-
-.host{
-font-size:13px;
-color:#999;
-}
-
-.onlineBadge{
-background:#052;
-color:#00ff99;
-padding:7px 14px;
-border-radius:999px;
-font-size:13px;
 }
 
 .main{
@@ -429,12 +383,10 @@ padding:10px 18px;
 border-radius:10px;
 cursor:pointer;
 color:white;
-font-size:14px;
 }
 
 .activeBtn{
 background:#2563eb;
-border-color:#2563eb;
 }
 
 .console{
@@ -445,23 +397,22 @@ border-radius:14px;
 padding:14px;
 overflow:auto;
 font-size:14px;
-line-height:1.2;
+line-height:1.3;
 display:flex;
 flex-direction:column;
-gap:2px;
+gap:4px;
 }
 
 .line{
 display:flex;
 gap:10px;
-padding:1px 0;
 white-space:pre-wrap;
 word-break:break-word;
 }
 
 .time{
 color:#666;
-min-width:82px;
+min-width:90px;
 }
 
 .sender{
@@ -472,7 +423,6 @@ min-width:150px;
 
 .msg{
 flex:1;
-color:white;
 }
 
 .inputBar{
@@ -488,7 +438,6 @@ padding:14px;
 border-radius:10px;
 color:white;
 outline:none;
-font-size:14px;
 }
 
 .send{
@@ -517,25 +466,6 @@ background:#171717;
 border:1px solid #292929;
 border-radius:12px;
 padding:14px;
-}
-
-.panelTitle{
-font-size:14px;
-color:#999;
-margin-bottom:10px;
-}
-
-.big{
-font-size:30px;
-font-weight:bold;
-margin-bottom:8px;
-}
-
-.stats{
-display:flex;
-flex-direction:column;
-gap:8px;
-font-size:15px;
 }
 
 .playerList{
@@ -584,20 +514,8 @@ background:#dc2626;
 
 <div class="top">
 
-<div class="leftTop">
-
 <div class="logo">
-KarmaSmp
-</div>
-
-<div class="host">
-karmasmp.ddns.net:25565
-</div>
-
-</div>
-
-<div class="onlineBadge">
-● Online
+KarmaSmp Bot Manager
 </div>
 
 </div>
@@ -612,14 +530,14 @@ karmasmp.ddns.net:25565
 id="Deadmau5Tab"
 class="botBtn activeBtn"
 onclick="switchBot('Deadmau5')">
-Deadmau5 Console
+Deadmau5
 </button>
 
 <button
 id="PrinceTab"
 class="botBtn"
 onclick="switchBot('Prince')">
-Prince Console
+Prince
 </button>
 
 </div>
@@ -635,13 +553,12 @@ Loading...
 <input
 id="cmd"
 class="input"
-placeholder="Send chat or command (/home)"
-autocomplete="off">
+placeholder="Send message or command">
 
 <button
 class="send"
 onclick="sendMsg()">
-Send
+SEND
 </button>
 
 </div>
@@ -652,19 +569,11 @@ Send
 
 <div class="panel">
 
-<div class="panelTitle">
-ACTIVE CONSOLE
-</div>
-
-<div
-class="big"
-id="activeName">
+<h2 id="activeName">
 Deadmau5
-</div>
+</h2>
 
-<div
-class="stats"
-id="stats">
+<div id="stats">
 Loading...
 </div>
 
@@ -688,14 +597,9 @@ STOP
 
 <div class="panel">
 
-<div class="panelTitle">
-PVP CONTROL
-</div>
-
-<input
-id="targetInput"
-class="input"
-placeholder="Target player name">
+<h3>
+Mob Farm Attack
+</h3>
 
 <div class="ctrls">
 
@@ -717,9 +621,9 @@ STOP
 
 <div class="panel">
 
-<div class="panelTitle">
-ONLINE PLAYERS
-</div>
+<h3>
+Online Players
+</h3>
 
 <div
 class="playerList"
@@ -792,8 +696,6 @@ document
 "💖 Health: " + info.health +
 "<br>🍖 Hunger: " + info.food +
 "<br>🌎 Dimension: " + info.dimension +
-"<br>🧑‍🤝‍🧑 Players: " +
-info.players.length +
 "<br>🟢 Status: " +
 (info.online ? "Online" : "Offline");
 
@@ -844,13 +746,6 @@ input.value = "";
 
 async function startAttack(){
 
-const target =
-document.getElementById(
-'targetInput'
-).value;
-
-if(!target) return;
-
 await fetch('/attack',{
 
 method:'POST',
@@ -860,11 +755,7 @@ headers:{
 },
 
 body:JSON.stringify({
-
-bot:currentBot,
-
-target:target
-
+bot:currentBot
 })
 
 });
@@ -882,9 +773,7 @@ headers:{
 },
 
 body:JSON.stringify({
-
 bot:currentBot
-
 })
 
 });
@@ -990,25 +879,11 @@ app.post("/send", (req, res) => {
   }
 
   if (!bot) {
-
-    addLog(
-      botName,
-      "§cBot offline"
-    );
-
     return res.sendStatus(404);
-
   }
 
   if (!bot.entity) {
-
-    addLog(
-      botName,
-      "§6Bot not ready yet"
-    );
-
     return res.sendStatus(400);
-
   }
 
   try {
@@ -1022,14 +897,7 @@ app.post("/send", (req, res) => {
 
     res.sendStatus(200);
 
-  } catch (err) {
-
-    addLog(
-      botName,
-      "§cChat send failed"
-    );
-
-    console.log(err);
+  } catch {
 
     res.sendStatus(500);
 
@@ -1040,7 +908,6 @@ app.post("/send", (req, res) => {
 app.post("/attack", (req, res) => {
 
   const botName = req.body.bot;
-  const targetName = req.body.target;
 
   let bot = null;
 
@@ -1056,45 +923,58 @@ app.post("/attack", (req, res) => {
     return res.sendStatus(404);
   }
 
-  if (!bot.entity) {
-    return res.sendStatus(400);
+  if (bot.mobLoop) {
+    clearInterval(bot.mobLoop);
   }
 
-  const target =
-  bot.players[targetName]?.entity;
+  addLog(
+    botName,
+    "§cMob attack enabled"
+  );
 
-  if (!target) {
+  bot.mobLoop = setInterval(() => {
 
-    addLog(
-      botName,
-      "§cTarget not found"
-    );
+    try {
 
-    return res.sendStatus(404);
+      const entity = Object.values(bot.entities)
 
-  }
+      .filter(e => {
 
-  try{
+        return (
 
-    bot.pvp.attack(target);
+          e.type === "mob"
 
-    addLog(
-      botName,
-      "§cAttacking " + targetName
-    );
+          && e.position.distanceTo(
+            bot.entity.position
+          ) < 4
 
-    res.sendStatus(200);
+        );
 
-  }catch(err){
+      })
 
-    addLog(
-      botName,
-      "§4Attack failed"
-    );
+      .sort((a,b)=>{
 
-    res.sendStatus(500);
+        return
 
-  }
+        bot.entity.position.distanceTo(a.position)
+
+        -
+
+        bot.entity.position.distanceTo(b.position);
+
+      })[0];
+
+      if(entity){
+
+        bot.attack(entity);
+
+      }
+
+    } catch {}
+
+  }, 600);
+
+  res.sendStatus(200);
 
 });
 
@@ -1116,22 +996,20 @@ app.post("/stopattack", (req, res) => {
     return res.sendStatus(404);
   }
 
-  try{
+  if (bot.mobLoop) {
 
-    bot.pvp.stop();
+    clearInterval(bot.mobLoop);
 
-    addLog(
-      botName,
-      "§eStopped attacking"
-    );
-
-    res.sendStatus(200);
-
-  }catch(err){
-
-    res.sendStatus(500);
+    bot.mobLoop = null;
 
   }
+
+  addLog(
+    botName,
+    "§eMob attack disabled"
+  );
+
+  res.sendStatus(200);
 
 });
 
