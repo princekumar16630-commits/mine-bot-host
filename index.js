@@ -135,6 +135,37 @@ function addLog(botName, msg) {
 
 }
 
+function antiAfk(bot) {
+
+  setInterval(() => {
+
+    try {
+
+      const yaw =
+      Math.random() * Math.PI * 2;
+
+      const pitch =
+      (Math.random() - 0.5) * 0.6;
+
+      bot.look(yaw, pitch, true);
+
+      bot.setControlState("jump", true);
+
+      setTimeout(() => {
+
+        bot.setControlState(
+          "jump",
+          false
+        );
+
+      }, 400);
+
+    } catch {}
+
+  }, 30000);
+
+}
+
 function createBot(name, password) {
 
   addLog(
@@ -173,6 +204,8 @@ function createBot(name, password) {
       );
 
     }, 3000);
+
+    antiAfk(bot);
 
   });
 
@@ -597,7 +630,7 @@ STOP
 <div class="panel">
 
 <h3>
-Mob Killaura
+Auto Tap
 </h3>
 
 <div class="ctrls">
@@ -605,7 +638,7 @@ Mob Killaura
 <button
 class="small start"
 onclick="startAttack()">
-ATTACK
+START
 </button>
 
 <button
@@ -881,10 +914,6 @@ app.post("/send", (req, res) => {
     return res.sendStatus(404);
   }
 
-  if (!bot.entity) {
-    return res.sendStatus(400);
-  }
-
   try {
 
     bot.chat(msg.toString());
@@ -922,82 +951,53 @@ app.post("/attack", (req, res) => {
     return res.sendStatus(404);
   }
 
-  if (!bot.entity) {
-    return res.sendStatus(400);
-  }
-
-  if (bot.mobLoop) {
-    clearInterval(bot.mobLoop);
+  if (bot.tapLoop) {
+    clearInterval(bot.tapLoop);
   }
 
   addLog(
     botName,
-    "§cKillaura enabled"
+    "§cAuto tap enabled"
   );
 
-  bot.mobLoop = setInterval(async () => {
+  bot.tapLoop = setInterval(() => {
 
     try {
 
-      const mobs = Object.values(bot.entities)
+      bot.swingArm("right");
 
-      .filter(e => {
+      const entity = Object.values(bot.entities)
+
+      .find(e => {
 
         return (
 
           e.type === "mob"
 
-          && e.position
-
-          && bot.entity
-
           && e.position.distanceTo(
             bot.entity.position
-          ) <= 6
+          ) <= 4
 
         );
 
       });
 
-      if (!mobs.length) return;
+      if(entity){
 
-      const target = mobs.sort((a,b)=>{
+        bot.attack(entity);
 
-        return
-
-        bot.entity.position.distanceTo(a.position)
-
-        -
-
-        bot.entity.position.distanceTo(b.position);
-
-      })[0];
-
-      if (!target) return;
-
-      await bot.lookAt(
-        target.position.offset(
-          0,
-          1,
-          0
-        ),
-        true
-      );
-
-      bot.attack(target);
-
-      bot.swingArm("right");
+      }
 
     } catch(err){
 
       addLog(
         botName,
-        "§4Attack error"
+        "§4Tap error"
       );
 
     }
 
-  }, 450);
+  }, 120);
 
   res.sendStatus(200);
 
@@ -1021,17 +1021,17 @@ app.post("/stopattack", (req, res) => {
     return res.sendStatus(404);
   }
 
-  if (bot.mobLoop) {
+  if (bot.tapLoop) {
 
-    clearInterval(bot.mobLoop);
+    clearInterval(bot.tapLoop);
 
-    bot.mobLoop = null;
+    bot.tapLoop = null;
 
   }
 
   addLog(
     botName,
-    "§eKillaura disabled"
+    "§eAuto tap disabled"
   );
 
   res.sendStatus(200);
