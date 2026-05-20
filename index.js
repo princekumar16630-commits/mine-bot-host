@@ -6,17 +6,26 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+let activeConsole = "Deadmau5";
+
 let deadBot = null;
 let princeBot = null;
+let princeeBot = null;
 
 let deadLogs = [];
 let princeLogs = [];
+let princeeLogs = [];
 
 function timeNow() {
-  return new Date().toLocaleTimeString("en-IN", {
-    timeZone: "Asia/Kolkata",
-    hour12: false
-  });
+
+  return new Date().toLocaleTimeString(
+    "en-IN",
+    {
+      timeZone: "Asia/Kolkata",
+      hour12: false
+    }
+  );
+
 }
 
 function pushLog(arr, html) {
@@ -36,6 +45,7 @@ function mcColor(text) {
   text = text.replace(/\x1B\[[0-9;]*m/g, "");
 
   const colors = {
+
     "0":"#000000",
     "1":"#0000AA",
     "2":"#00AA00",
@@ -52,13 +62,26 @@ function mcColor(text) {
     "d":"#FF55FF",
     "e":"#FFFF55",
     "f":"#FFFFFF"
+
   };
 
-  text = text.replace(/§([0-9a-f])/gi, (_, code) => {
-    return `<span style="color:${colors[code.toLowerCase()] || "#fff"}">`;
-  });
+  text = text.replace(
+    /§([0-9a-f])/gi,
+    (_, code) => {
+
+      return `
+      <span style="color:${
+        colors[
+          code.toLowerCase()
+        ] || "#fff"
+      }">
+      `;
+
+    }
+  );
 
   return text + "</span>";
+
 }
 
 function addLog(botName, msg) {
@@ -70,14 +93,16 @@ function addLog(botName, msg) {
   if (!msg.length) return;
 
   let sender = "SERVER";
+
   let finalMsg = msg;
 
   const normal =
-    msg.match(/^<([^>]+)>\s(.+)/);
+  msg.match(/^<([^>]+)>\s(.+)/);
 
   if (normal) {
 
     sender = normal[1];
+
     finalMsg = normal[2];
 
   } else {
@@ -87,7 +112,9 @@ function addLog(botName, msg) {
     if (split.length > 1) {
 
       sender = split[0];
-      finalMsg = msg.substring(sender.length);
+
+      finalMsg =
+      msg.substring(sender.length);
 
     }
 
@@ -96,6 +123,7 @@ function addLog(botName, msg) {
   finalMsg = mcColor(finalMsg);
 
   const html = `
+
   <div class="line">
 
     <span class="time">
@@ -111,6 +139,7 @@ function addLog(botName, msg) {
     </span>
 
   </div>
+
   `;
 
   if (botName === "Deadmau5") {
@@ -121,9 +150,13 @@ function addLog(botName, msg) {
     pushLog(princeLogs, html);
   }
 
+  if (botName === "Princee_07") {
+    pushLog(princeeLogs, html);
+  }
+
 }
 
-function createBot(name) {
+function createBot(name, password) {
 
   addLog(
     name,
@@ -131,9 +164,13 @@ function createBot(name) {
   );
 
   const bot = mineflayer.createBot({
+
     host: "karmasmp.ddns.net",
+
     port: 25565,
+
     username: name
+
   });
 
   bot.online = false;
@@ -149,7 +186,7 @@ function createBot(name) {
 
     setTimeout(() => {
 
-      bot.chat("/login 676769");
+      bot.chat("/login " + password);
 
       addLog(
         name,
@@ -161,7 +198,9 @@ function createBot(name) {
   });
 
   bot.on("messagestr", (msg) => {
+
     addLog(name, msg);
+
   });
 
   bot.on("chat", (username, message) => {
@@ -177,7 +216,9 @@ function createBot(name) {
 
     addLog(
       name,
-      "§a" + player.username + " joined the game"
+      "§a" +
+      player.username +
+      " joined the game"
     );
 
   });
@@ -186,7 +227,9 @@ function createBot(name) {
 
     addLog(
       name,
-      "§c" + player.username + " left the game"
+      "§c" +
+      player.username +
+      " left the game"
     );
 
   });
@@ -207,12 +250,43 @@ function createBot(name) {
         "§6Reconnecting..."
       );
 
-      if (name === "Deadmau5" && deadBot) {
-        deadBot = createBot("Deadmau5");
+      if (
+        name === "Deadmau5"
+        && deadBot
+      ) {
+
+        deadBot =
+        createBot(
+          "Deadmau5",
+          "676769"
+        );
+
       }
 
-      if (name === "Prince" && princeBot) {
-        princeBot = createBot("Prince");
+      if (
+        name === "Prince"
+        && princeBot
+      ) {
+
+        princeBot =
+        createBot(
+          "Prince",
+          "676769"
+        );
+
+      }
+
+      if (
+        name === "Princee_07"
+        && princeeBot
+      ) {
+
+        princeeBot =
+        createBot(
+          "Princee_07",
+          "896926"
+        );
+
       }
 
     }, 60000);
@@ -238,6 +312,7 @@ function createBot(name) {
   });
 
   return bot;
+
 }
 
 function botInfo(bot) {
@@ -245,21 +320,40 @@ function botInfo(bot) {
   if (!bot || !bot.entity) {
 
     return {
+
       online:false,
+
       health:0,
+
       food:0,
+
       dimension:"Unknown",
+
       players:[]
+
     };
 
   }
 
   return {
+
     online:bot.online,
-    health:Math.floor(bot.health || 0),
-    food:Math.floor(bot.food || 0),
-    dimension:bot.game.dimension || "Unknown",
-    players:Object.keys(bot.players || {})
+
+    health:Math.floor(
+      bot.health || 0
+    ),
+
+    food:Math.floor(
+      bot.food || 0
+    ),
+
+    dimension:
+    bot.game.dimension || "Unknown",
+
+    players:Object.keys(
+      bot.players || {}
+    )
+
   };
 
 }
@@ -544,6 +638,13 @@ onclick="switchBot('Prince')">
 Prince Console
 </button>
 
+<button
+id="Princee_07Tab"
+class="botBtn"
+onclick="switchBot('Princee_07')">
+Princee_07 Console
+</button>
+
 </div>
 
 <div
@@ -643,6 +744,10 @@ document
 .classList.remove("activeBtn");
 
 document
+.getElementById("Princee_07Tab")
+.classList.remove("activeBtn");
+
+document
 .getElementById(name + "Tab")
 .classList.add("activeBtn");
 
@@ -659,9 +764,16 @@ const data =
 await res.json();
 
 const bot =
+
 currentBot === "Deadmau5"
+
 ? data.dead
-: data.prince;
+
+: currentBot === "Prince"
+
+? data.prince
+
+: data.princee;
 
 document
 .getElementById("console")
@@ -682,7 +794,8 @@ document
 "💖 Health: " + info.health +
 "<br>🍖 Hunger: " + info.food +
 "<br>🌎 Dimension: " + info.dimension +
-"<br>🧑‍🤝‍🧑 Players: " + info.players.length +
+"<br>🧑‍🤝‍🧑 Players: " +
+info.players.length +
 "<br>🟢 Status: " +
 (info.online ? "Online" : "Offline");
 
@@ -807,6 +920,11 @@ app.get("/data", (req, res) => {
     prince:{
       logs:princeLogs,
       info:botInfo(princeBot)
+    },
+
+    princee:{
+      logs:princeeLogs,
+      info:botInfo(princeeBot)
     }
 
   });
@@ -816,6 +934,7 @@ app.get("/data", (req, res) => {
 app.post("/send", (req, res) => {
 
   const botName = req.body.bot;
+
   const msg = req.body.msg;
 
   let bot = null;
@@ -826,6 +945,10 @@ app.post("/send", (req, res) => {
 
   if (botName === "Prince") {
     bot = princeBot;
+  }
+
+  if (botName === "Princee_07") {
+    bot = princeeBot;
   }
 
   if (!bot) {
@@ -880,12 +1003,43 @@ app.post("/start", (req, res) => {
 
   const bot = req.body.bot;
 
-  if (bot === "Deadmau5" && !deadBot) {
-    deadBot = createBot("Deadmau5");
+  if (
+    bot === "Deadmau5"
+    && !deadBot
+  ) {
+
+    deadBot =
+    createBot(
+      "Deadmau5",
+      "676769"
+    );
+
   }
 
-  if (bot === "Prince" && !princeBot) {
-    princeBot = createBot("Prince");
+  if (
+    bot === "Prince"
+    && !princeBot
+  ) {
+
+    princeBot =
+    createBot(
+      "Prince",
+      "676769"
+    );
+
+  }
+
+  if (
+    bot === "Princee_07"
+    && !princeeBot
+  ) {
+
+    princeeBot =
+    createBot(
+      "Princee_07",
+      "896926"
+    );
+
   }
 
   res.sendStatus(200);
@@ -896,23 +1050,68 @@ app.post("/stop", (req, res) => {
 
   const bot = req.body.bot;
 
-  if (bot === "Deadmau5" && deadBot) {
+  if (
+    bot === "Deadmau5"
+    && deadBot
+  ) {
+
     deadBot.quit();
+
     deadBot = null;
+
   }
 
-  if (bot === "Prince" && princeBot) {
+  if (
+    bot === "Prince"
+    && princeBot
+  ) {
+
     princeBot.quit();
+
     princeBot = null;
+
+  }
+
+  if (
+    bot === "Princee_07"
+    && princeeBot
+  ) {
+
+    princeeBot.quit();
+
+    princeeBot = null;
+
   }
 
   res.sendStatus(200);
 
 });
 
-deadBot = createBot("Deadmau5");
-princeBot = createBot("Prince");
+deadBot =
+createBot(
+  "Deadmau5",
+  "676769"
+);
 
-app.listen(3000, "0.0.0.0", () => {
-  console.log("Dashboard running");
+princeBot =
+createBot(
+  "Prince",
+  "676769"
+);
+
+princeeBot =
+createBot(
+  "Princee_07",
+  "896926"
+);
+
+app.listen(
+3000,
+"0.0.0.0",
+()=>{
+
+console.log(
+"Dashboard running"
+);
+
 });
