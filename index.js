@@ -325,7 +325,7 @@ res.send(`
 
 <head>
 
-<title>MC Bot Console</title>
+<title>KarmaSmp Bot Manager</title>
 
 <style>
 
@@ -349,12 +349,11 @@ background:#111111;
 border-bottom:1px solid #202020;
 display:flex;
 align-items:center;
-justify-content:space-between;
 padding:0 25px;
 }
 
 .logo{
-font-size:32px;
+font-size:30px;
 font-weight:bold;
 }
 
@@ -598,7 +597,7 @@ STOP
 <div class="panel">
 
 <h3>
-Mob Farm Attack
+Mob Killaura
 </h3>
 
 <div class="ctrls">
@@ -923,20 +922,24 @@ app.post("/attack", (req, res) => {
     return res.sendStatus(404);
   }
 
+  if (!bot.entity) {
+    return res.sendStatus(400);
+  }
+
   if (bot.mobLoop) {
     clearInterval(bot.mobLoop);
   }
 
   addLog(
     botName,
-    "§cMob attack enabled"
+    "§cKillaura enabled"
   );
 
-  bot.mobLoop = setInterval(() => {
+  bot.mobLoop = setInterval(async () => {
 
     try {
 
-      const entity = Object.values(bot.entities)
+      const mobs = Object.values(bot.entities)
 
       .filter(e => {
 
@@ -944,15 +947,21 @@ app.post("/attack", (req, res) => {
 
           e.type === "mob"
 
+          && e.position
+
+          && bot.entity
+
           && e.position.distanceTo(
             bot.entity.position
-          ) < 4
+          ) <= 4
 
         );
 
-      })
+      });
 
-      .sort((a,b)=>{
+      if (!mobs.length) return;
+
+      const target = mobs.sort((a,b)=>{
 
         return
 
@@ -964,15 +973,29 @@ app.post("/attack", (req, res) => {
 
       })[0];
 
-      if(entity){
+      if (!target) return;
 
-        bot.attack(entity);
+      await bot.lookAt(
+        target.position.offset(
+          0,
+          target.height,
+          0
+        ),
+        true
+      );
 
-      }
+      bot.attack(target);
 
-    } catch {}
+    } catch(err){
 
-  }, 600);
+      addLog(
+        botName,
+        "§4Attack error"
+      );
+
+    }
+
+  }, 450);
 
   res.sendStatus(200);
 
@@ -1006,7 +1029,7 @@ app.post("/stopattack", (req, res) => {
 
   addLog(
     botName,
-    "§eMob attack disabled"
+    "§eKillaura disabled"
   );
 
   res.sendStatus(200);
