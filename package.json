@@ -1,15 +1,12 @@
 {
-  "name": "karma-bot-manager",
+  "name": "mcbot",
   "version": "1.0.0",
   "main": "index.js",
-  "type": "commonjs",
-
   "scripts": {
     "start": "node index.js"
   },
-
   "dependencies": {
-    "express": "^5.1.0",
+    "express": "^4.21.2",
     "mineflayer": "^4.20.1"
   }
 }
