@@ -10,11 +10,9 @@ let activeConsole = "Deadmau5";
 
 let deadBot = null;
 let princeBot = null;
-let princeeBot = null;
 
 let deadLogs = [];
 let princeLogs = [];
-let princeeLogs = [];
 
 function timeNow() {
 
@@ -150,10 +148,6 @@ function addLog(botName, msg) {
     pushLog(princeLogs, html);
   }
 
-  if (botName === "Princee_07") {
-    pushLog(princeeLogs, html);
-  }
-
 }
 
 function createBot(name, password) {
@@ -272,19 +266,6 @@ function createBot(name, password) {
         createBot(
           "Prince",
           "676769"
-        );
-
-      }
-
-      if (
-        name === "Princee_07"
-        && princeeBot
-      ) {
-
-        princeeBot =
-        createBot(
-          "Princee_07",
-          "896926"
         );
 
       }
@@ -638,13 +619,6 @@ onclick="switchBot('Prince')">
 Prince Console
 </button>
 
-<button
-id="Princee_07Tab"
-class="botBtn"
-onclick="switchBot('Princee_07')">
-Princee_07 Console
-</button>
-
 </div>
 
 <div
@@ -744,10 +718,6 @@ document
 .classList.remove("activeBtn");
 
 document
-.getElementById("Princee_07Tab")
-.classList.remove("activeBtn");
-
-document
 .getElementById(name + "Tab")
 .classList.add("activeBtn");
 
@@ -769,11 +739,7 @@ currentBot === "Deadmau5"
 
 ? data.dead
 
-: currentBot === "Prince"
-
-? data.prince
-
-: data.princee;
+: data.prince;
 
 document
 .getElementById("console")
@@ -920,11 +886,6 @@ app.get("/data", (req, res) => {
     prince:{
       logs:princeLogs,
       info:botInfo(princeBot)
-    },
-
-    princee:{
-      logs:princeeLogs,
-      info:botInfo(princeeBot)
     }
 
   });
@@ -945,10 +906,6 @@ app.post("/send", (req, res) => {
 
   if (botName === "Prince") {
     bot = princeBot;
-  }
-
-  if (botName === "Princee_07") {
-    bot = princeeBot;
   }
 
   if (!bot) {
@@ -1029,19 +986,6 @@ app.post("/start", (req, res) => {
 
   }
 
-  if (
-    bot === "Princee_07"
-    && !princeeBot
-  ) {
-
-    princeeBot =
-    createBot(
-      "Princee_07",
-      "896926"
-    );
-
-  }
-
   res.sendStatus(200);
 
 });
@@ -1072,17 +1016,6 @@ app.post("/stop", (req, res) => {
 
   }
 
-  if (
-    bot === "Princee_07"
-    && princeeBot
-  ) {
-
-    princeeBot.quit();
-
-    princeeBot = null;
-
-  }
-
   res.sendStatus(200);
 
 });
@@ -1097,12 +1030,6 @@ princeBot =
 createBot(
   "Prince",
   "676769"
-);
-
-princeeBot =
-createBot(
-  "Princee_07",
-  "896926"
 );
 
 app.listen(
