@@ -1,5 +1,6 @@
 const express = require("express");
 const mineflayer = require("mineflayer");
+const pvp = require("mineflayer-pvp").plugin;
 
 const app = express();
 
@@ -166,6 +167,8 @@ function createBot(name, password) {
     username: name
 
   });
+
+  bot.loadPlugin(pvp);
 
   bot.online = false;
 
@@ -686,6 +689,35 @@ STOP
 <div class="panel">
 
 <div class="panelTitle">
+PVP CONTROL
+</div>
+
+<input
+id="targetInput"
+class="input"
+placeholder="Target player name">
+
+<div class="ctrls">
+
+<button
+class="small start"
+onclick="startAttack()">
+ATTACK
+</button>
+
+<button
+class="small stop"
+onclick="stopAttack()">
+STOP
+</button>
+
+</div>
+
+</div>
+
+<div class="panel">
+
+<div class="panelTitle">
 ONLINE PLAYERS
 </div>
 
@@ -807,6 +839,55 @@ msg:msg
 });
 
 input.value = "";
+
+}
+
+async function startAttack(){
+
+const target =
+document.getElementById(
+'targetInput'
+).value;
+
+if(!target) return;
+
+await fetch('/attack',{
+
+method:'POST',
+
+headers:{
+'Content-Type':'application/json'
+},
+
+body:JSON.stringify({
+
+bot:currentBot,
+
+target:target
+
+})
+
+});
+
+}
+
+async function stopAttack(){
+
+await fetch('/stopattack',{
+
+method:'POST',
+
+headers:{
+'Content-Type':'application/json'
+},
+
+body:JSON.stringify({
+
+bot:currentBot
+
+})
+
+});
 
 }
 
@@ -949,6 +1030,104 @@ app.post("/send", (req, res) => {
     );
 
     console.log(err);
+
+    res.sendStatus(500);
+
+  }
+
+});
+
+app.post("/attack", (req, res) => {
+
+  const botName = req.body.bot;
+  const targetName = req.body.target;
+
+  let bot = null;
+
+  if (botName === "Deadmau5") {
+    bot = deadBot;
+  }
+
+  if (botName === "Prince") {
+    bot = princeBot;
+  }
+
+  if (!bot) {
+    return res.sendStatus(404);
+  }
+
+  if (!bot.entity) {
+    return res.sendStatus(400);
+  }
+
+  const target =
+  bot.players[targetName]?.entity;
+
+  if (!target) {
+
+    addLog(
+      botName,
+      "§cTarget not found"
+    );
+
+    return res.sendStatus(404);
+
+  }
+
+  try{
+
+    bot.pvp.attack(target);
+
+    addLog(
+      botName,
+      "§cAttacking " + targetName
+    );
+
+    res.sendStatus(200);
+
+  }catch(err){
+
+    addLog(
+      botName,
+      "§4Attack failed"
+    );
+
+    res.sendStatus(500);
+
+  }
+
+});
+
+app.post("/stopattack", (req, res) => {
+
+  const botName = req.body.bot;
+
+  let bot = null;
+
+  if (botName === "Deadmau5") {
+    bot = deadBot;
+  }
+
+  if (botName === "Prince") {
+    bot = princeBot;
+  }
+
+  if (!bot) {
+    return res.sendStatus(404);
+  }
+
+  try{
+
+    bot.pvp.stop();
+
+    addLog(
+      botName,
+      "§eStopped attacking"
+    );
+
+    res.sendStatus(200);
+
+  }catch(err){
 
     res.sendStatus(500);
 
