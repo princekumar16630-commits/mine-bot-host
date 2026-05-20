@@ -3,37 +3,30 @@ const express = require('express')
 
 const app = express()
 
-// ===== WEB SERVER FOR RENDER =====
+// ===== WEB SERVER =====
 app.get('/', (req, res) => {
-  res.send('Bot is alive')
+  res.send('Bot Alive')
 })
 
 app.listen(3000, () => {
   console.log('Web server running')
 })
 
-// ===== CREATE BOT =====
+// ===== BOT =====
 const bot = mineflayer.createBot({
-  host: process.env.HOST || 'YOUR_SERVER_IP',
-  port: parseInt(process.env.PORT) || 25565,
-  username: process.env.USERNAME || 'Prince'
+  host: 'YOUR_SERVER_IP',
+  port: 25565,
+  username: 'Prince'
 })
 
-// ===== VARIABLES =====
 let attacking = false
-let lookYaw = 0
 
-// ===== BOT SPAWN =====
+// ===== SPAWN =====
 bot.on('spawn', () => {
-  console.log('Bot joined server')
+  console.log('Bot joined')
 
-  // anti afk random look
+  // anti afk
   setInterval(() => {
-    lookYaw += Math.random() * 0.8 - 0.4
-
-    bot.look(lookYaw, 0, true)
-
-    // small movement
     bot.setControlState('jump', true)
 
     setTimeout(() => {
@@ -43,20 +36,19 @@ bot.on('spawn', () => {
   }, 10000)
 })
 
-// ===== CHAT COMMANDS =====
+// ===== CHAT COMMAND =====
 bot.on('chat', (username, message) => {
+
   if (username === bot.username) return
 
-  // START ATTACK
   if (message === 'attack') {
     attacking = true
-    bot.chat('Attack enabled')
+    bot.chat('attack on')
   }
 
-  // STOP ATTACK
   if (message === 'stop') {
     attacking = false
-    bot.chat('Attack disabled')
+    bot.chat('attack off')
   }
 })
 
@@ -65,49 +57,28 @@ setInterval(() => {
 
   if (!attacking) return
 
-  const entity = bot.nearestEntity(entity =>
-    entity.type === 'player' &&
-    entity.username !== bot.username
+  const players = Object.values(bot.entities).filter(e =>
+    e.type === 'player' &&
+    e.username !== bot.username
   )
 
-  if (!entity) return
+  if (players.length === 0) return
 
-  // LOOK DIRECTLY AT PLAYER
-  bot.lookAt(entity.position.offset(0, 1.5, 0), true)
+  const target = players[0]
 
-  // MOVE FORWARD
+  bot.lookAt(target.position.offset(0, 1.5, 0))
+
   bot.setControlState('forward', true)
 
-  // SPRINT
-  bot.setControlState('sprint', true)
-
-  // REAL ATTACK
-  bot.attack(entity)
-
-}, 600)
-
-// ===== STOP MOVEMENT WHEN NO TARGET =====
-setInterval(() => {
-
-  const entity = bot.nearestEntity(entity =>
-    entity.type === 'player' &&
-    entity.username !== bot.username
-  )
-
-  if (!entity) {
-    bot.setControlState('forward', false)
-    bot.setControlState('sprint', false)
-  }
+  bot.attack(target)
 
 }, 1000)
 
-// ===== AUTO RECONNECT =====
-bot.on('end', () => {
-  console.log('Disconnected, reconnecting...')
-  setTimeout(() => {
-    process.exit()
-  }, 5000)
+// ===== ERRORS =====
+bot.on('error', err => {
+  console.log(err)
 })
 
-bot.on('kicked', console.log)
-bot.on('error', console.log)
+bot.on('kicked', reason => {
+  console.log(reason)
+})
