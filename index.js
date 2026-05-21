@@ -48,7 +48,7 @@ function pushLog(arr, html) {
 
 }
 
-// ================= MC COLOR =================
+// ================= MC COLORS =================
 
 function mcColor(text) {
 
@@ -256,28 +256,6 @@ function createBot(name, password){
 
   });
 
-  bot.on("playerJoined", (player) => {
-
-    addLog(
-      name,
-      "§a" +
-      player.username +
-      " joined the game"
-    );
-
-  });
-
-  bot.on("playerLeft", (player) => {
-
-    addLog(
-      name,
-      "§c" +
-      player.username +
-      " left the game"
-    );
-
-  });
-
   bot.on("end", () => {
 
     bot.online = false;
@@ -333,9 +311,16 @@ function createBot(name, password){
 
       }
 
+      // Princee_07 only reconnects during 7AM-5PM
+
+      const now = new Date();
+      const hour = now.getHours();
+
       if(
         name === "Princee_07"
         && princeeBot
+        && hour >= 7
+        && hour < 17
       ){
 
         princeeBot =
@@ -363,51 +348,6 @@ function createBot(name, password){
 
 }
 
-// ================= BOT INFO =================
-
-function botInfo(bot){
-
-  if(!bot || !bot.entity){
-
-    return {
-
-      online:false,
-
-      health:0,
-
-      food:0,
-
-      dimension:"Unknown",
-
-      players:[]
-
-    };
-
-  }
-
-  return {
-
-    online:bot.online,
-
-    health:Math.floor(
-      bot.health || 0
-    ),
-
-    food:Math.floor(
-      bot.food || 0
-    ),
-
-    dimension:
-    bot.game.dimension || "Unknown",
-
-    players:Object.keys(
-      bot.players || {}
-    )
-
-  };
-
-}
-
 // ================= WEBSITE =================
 
 app.get("/", (req, res) => {
@@ -420,7 +360,7 @@ res.send(`
 
 <head>
 
-<title>KarmaSmp Bot Manager</title>
+<title>Karma Bot Manager</title>
 
 <style>
 
@@ -629,40 +569,6 @@ STOP
 
 </div>
 
-<div class="panel">
-
-<h3>
-Auto Attack
-</h3>
-
-<div class="btns">
-
-<button
-class="small green"
-onclick="startAttack()">
-START
-</button>
-
-<button
-class="small red"
-onclick="stopAttack()">
-STOP
-</button>
-
-</div>
-
-</div>
-
-<div class="panel">
-
-<h3>
-Players Online
-</h3>
-
-<div id="players"></div>
-
-</div>
-
 </div>
 
 <script>
@@ -717,31 +623,6 @@ document
 .innerHTML =
 bot.logs.join("");
 
-const info = bot.info;
-
-document
-.getElementById("activeName")
-.innerText =
-currentBot;
-
-document
-.getElementById("stats")
-.innerHTML =
-
-"💖 Health: " + info.health +
-"<br>🍖 Hunger: " + info.food +
-"<br>🌎 Dimension: " + info.dimension +
-"<br>🟢 Status: " +
-(info.online ? "Online" : "Offline");
-
-document
-.getElementById("players")
-.innerHTML =
-
-info.players.map(p=>
-'<div class="player">'+p+'</div>'
-).join('');
-
 const consoleDiv =
 document.getElementById("console");
 
@@ -775,42 +656,6 @@ msg:msg
 document
 .getElementById("cmd")
 .value = "";
-
-}
-
-async function startAttack(){
-
-await fetch("/attack",{
-
-method:"POST",
-
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-bot:currentBot
-})
-
-});
-
-}
-
-async function stopAttack(){
-
-await fetch("/stopattack",{
-
-method:"POST",
-
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-bot:currentBot
-})
-
-});
 
 }
 
@@ -885,23 +730,19 @@ app.get("/data", (req, res) => {
   res.json({
 
     dead:{
-      logs:deadLogs,
-      info:botInfo(deadBot)
+      logs:deadLogs
     },
 
     prince:{
-      logs:princeLogs,
-      info:botInfo(princeBot)
+      logs:princeLogs
     },
 
     wemmbu:{
-      logs:wemmbuLogs,
-      info:botInfo(wemmbuBot)
+      logs:wemmbuLogs
     },
 
     princee:{
-      logs:princeeLogs,
-      info:botInfo(princeeBot)
+      logs:princeeLogs
     }
 
   });
@@ -953,135 +794,6 @@ app.post("/send", (req, res) => {
     res.sendStatus(500);
 
   }
-
-});
-
-// ================= ATTACK =================
-
-app.post("/attack", (req, res) => {
-
-  const botName = req.body.bot;
-
-  let bot = null;
-
-  if(botName === "Deadmau5"){
-    bot = deadBot;
-  }
-
-  if(botName === "Prince"){
-    bot = princeBot;
-  }
-
-  if(botName === "Wemmbu_Alt"){
-    bot = wemmbuBot;
-  }
-
-  if(botName === "Princee_07"){
-    bot = princeeBot;
-  }
-
-  if(!bot){
-    return res.sendStatus(404);
-  }
-
-  if(bot.tapLoop){
-    clearInterval(bot.tapLoop);
-  }
-
-  addLog(
-    botName,
-    "§cAuto attack enabled"
-  );
-
-  bot.tapLoop = setInterval(() => {
-
-    try{
-
-      bot.swingArm("right");
-
-      const entity = Object.values(bot.entities)
-
-      .find(e => {
-
-        return (
-
-          e.type === "mob"
-
-          && e.position
-
-          && bot.entity
-
-          && e.position.distanceTo(
-            bot.entity.position
-          ) <= 4
-
-        );
-
-      });
-
-      if(entity){
-
-        bot.attack(entity);
-
-      }
-
-    }catch(err){
-
-      addLog(
-        botName,
-        "§4Attack error"
-      );
-
-    }
-
-  }, 120);
-
-  res.sendStatus(200);
-
-});
-
-// ================= STOP ATTACK =================
-
-app.post("/stopattack", (req, res) => {
-
-  const botName = req.body.bot;
-
-  let bot = null;
-
-  if(botName === "Deadmau5"){
-    bot = deadBot;
-  }
-
-  if(botName === "Prince"){
-    bot = princeBot;
-  }
-
-  if(botName === "Wemmbu_Alt"){
-    bot = wemmbuBot;
-  }
-
-  if(botName === "Princee_07"){
-    bot = princeeBot;
-  }
-
-  if(!bot){
-    return res.sendStatus(404);
-  }
-
-  if(bot.tapLoop){
-
-    clearInterval(bot.tapLoop);
-
-    bot.tapLoop = null;
-
-  }
-
-  addLog(
-    botName,
-    "§eAuto attack disabled"
-  );
-
-  res.sendStatus(200);
 
 });
 
@@ -1177,7 +889,7 @@ app.post("/stop", (req, res) => {
 
 });
 
-// ================= AUTO START =================
+// ================= ALWAYS ONLINE BOTS =================
 
 deadBot =
 createBot(
@@ -1197,11 +909,58 @@ createBot(
   "676769"
 );
 
-princeeBot =
-createBot(
-  "Princee_07",
-  "896926@"
-);
+// ================= Princee_07 SCHEDULE =================
+
+// 7 AM START
+setInterval(() => {
+
+  const now = new Date();
+
+  const hour =
+  now.getHours();
+
+  const minute =
+  now.getMinutes();
+
+  if(
+    hour === 7
+    && minute === 0
+    && !princeeBot
+  ){
+
+    princeeBot =
+    createBot(
+      "Princee_07",
+      "896926@"
+    );
+
+    addLog(
+      "Princee_07",
+      "§aScheduled START"
+    );
+
+  }
+
+  // 5 PM STOP
+
+  if(
+    hour === 17
+    && minute === 0
+    && princeeBot
+  ){
+
+    princeeBot.quit();
+
+    princeeBot = null;
+
+    addLog(
+      "Princee_07",
+      "§cScheduled STOP"
+    );
+
+  }
+
+}, 60000);
 
 // ================= SERVER =================
 
