@@ -20,6 +20,10 @@ let princeLogs = [];
 let wemmbuLogs = [];
 let princeeLogs = [];
 
+// ================= SCHEDULES =================
+
+const schedules = {};
+
 // ================= TIME =================
 
 function timeNow() {
@@ -267,11 +271,6 @@ function createBot(name, password){
 
     setTimeout(() => {
 
-      addLog(
-        name,
-        "§6Reconnecting..."
-      );
-
       if(
         name === "Deadmau5"
         && deadBot
@@ -311,16 +310,9 @@ function createBot(name, password){
 
       }
 
-      // Princee_07 only reconnects during 7AM-5PM
-
-      const now = new Date();
-      const hour = now.getHours();
-
       if(
         name === "Princee_07"
         && princeeBot
-        && hour >= 7
-        && hour < 17
       ){
 
         princeeBot =
@@ -456,7 +448,7 @@ cursor:pointer;
 }
 
 .right{
-width:320px;
+width:340px;
 background:#111;
 padding:12px;
 overflow:auto;
@@ -493,13 +485,14 @@ background:#16a34a;
 background:#dc2626;
 }
 
-.player{
-background:#0d1117;
-padding:6px 10px;
-border-radius:999px;
-margin:4px;
-display:inline-block;
-font-size:12px;
+.timeInput{
+width:100%;
+padding:10px;
+margin-top:10px;
+background:#111;
+border:1px solid #333;
+border-radius:10px;
+color:white;
 }
 
 </style>
@@ -549,8 +542,6 @@ SEND
 Deadmau5
 </h2>
 
-<div id="stats"></div>
-
 <div class="btns">
 
 <button
@@ -566,6 +557,39 @@ STOP
 </button>
 
 </div>
+
+</div>
+
+<div class="panel">
+
+<h3>
+Bot Schedule
+</h3>
+
+<div style="margin-top:10px;">
+Start Time
+</div>
+
+<input
+id="startTime"
+type="time"
+class="timeInput">
+
+<div style="margin-top:12px;">
+Stop Time
+</div>
+
+<input
+id="stopTime"
+type="time"
+class="timeInput">
+
+<button
+class="small green"
+style="width:100%;margin-top:14px;"
+onclick="saveSchedule()">
+SAVE SCHEDULE
+</button>
 
 </div>
 
@@ -692,6 +716,38 @@ bot:currentBot
 })
 
 });
+
+}
+
+async function saveSchedule(){
+
+const start =
+document.getElementById("startTime").value;
+
+const stop =
+document.getElementById("stopTime").value;
+
+await fetch("/schedule",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+bot:currentBot,
+
+start:start,
+
+stop:stop
+
+})
+
+});
+
+alert("Schedule Saved");
 
 }
 
@@ -889,7 +945,167 @@ app.post("/stop", (req, res) => {
 
 });
 
-// ================= ALWAYS ONLINE BOTS =================
+// ================= SAVE SCHEDULE =================
+
+app.post("/schedule", (req, res) => {
+
+  const bot = req.body.bot;
+
+  schedules[bot] = {
+
+    start:req.body.start,
+
+    stop:req.body.stop
+
+  };
+
+  addLog(
+    bot,
+    "§aSchedule Updated"
+  );
+
+  res.sendStatus(200);
+
+});
+
+// ================= AUTO SCHEDULER =================
+
+setInterval(() => {
+
+  const now = new Date();
+
+  const hh =
+  String(now.getHours())
+  .padStart(2,"0");
+
+  const mm =
+  String(now.getMinutes())
+  .padStart(2,"0");
+
+  const current =
+  hh + ":" + mm;
+
+  Object.keys(schedules)
+  .forEach(botName => {
+
+    const s =
+    schedules[botName];
+
+    let bot = null;
+
+    if(botName === "Deadmau5"){
+      bot = deadBot;
+    }
+
+    if(botName === "Prince"){
+      bot = princeBot;
+    }
+
+    if(botName === "Wemmbu_Alt"){
+      bot = wemmbuBot;
+    }
+
+    if(botName === "Princee_07"){
+      bot = princeeBot;
+    }
+
+    // START
+
+    if(
+      s.start === current
+    ){
+
+      if(!bot){
+
+        addLog(
+          botName,
+          "§aScheduled START"
+        );
+
+        if(botName === "Deadmau5"){
+
+          deadBot =
+          createBot(
+            "Deadmau5",
+            "676769"
+          );
+
+        }
+
+        if(botName === "Prince"){
+
+          princeBot =
+          createBot(
+            "Prince",
+            "676769"
+          );
+
+        }
+
+        if(botName === "Wemmbu_Alt"){
+
+          wemmbuBot =
+          createBot(
+            "Wemmbu_Alt",
+            "676769"
+          );
+
+        }
+
+        if(botName === "Princee_07"){
+
+          princeeBot =
+          createBot(
+            "Princee_07",
+            "896926@"
+          );
+
+        }
+
+      }
+
+    }
+
+    // STOP
+
+    if(
+      s.stop === current
+    ){
+
+      if(bot){
+
+        addLog(
+          botName,
+          "§cScheduled STOP"
+        );
+
+        bot.quit();
+
+        if(botName === "Deadmau5"){
+          deadBot = null;
+        }
+
+        if(botName === "Prince"){
+          princeBot = null;
+        }
+
+        if(botName === "Wemmbu_Alt"){
+          wemmbuBot = null;
+        }
+
+        if(botName === "Princee_07"){
+          princeeBot = null;
+        }
+
+      }
+
+    }
+
+  });
+
+}, 60000);
+
+// ================= AUTO START =================
 
 deadBot =
 createBot(
@@ -909,58 +1125,11 @@ createBot(
   "676769"
 );
 
-// ================= Princee_07 SCHEDULE =================
-
-// 7 AM START
-setInterval(() => {
-
-  const now = new Date();
-
-  const hour =
-  now.getHours();
-
-  const minute =
-  now.getMinutes();
-
-  if(
-    hour === 7
-    && minute === 0
-    && !princeeBot
-  ){
-
-    princeeBot =
-    createBot(
-      "Princee_07",
-      "896926@"
-    );
-
-    addLog(
-      "Princee_07",
-      "§aScheduled START"
-    );
-
-  }
-
-  // 5 PM STOP
-
-  if(
-    hour === 17
-    && minute === 0
-    && princeeBot
-  ){
-
-    princeeBot.quit();
-
-    princeeBot = null;
-
-    addLog(
-      "Princee_07",
-      "§cScheduled STOP"
-    );
-
-  }
-
-}, 60000);
+princeeBot =
+createBot(
+  "Princee_07",
+  "896926@"
+);
 
 // ================= SERVER =================
 
