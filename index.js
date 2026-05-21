@@ -9,10 +9,12 @@ app.use(express.urlencoded({ extended: true }));
 let deadBot = null;
 let princeBot = null;
 let wemmbuBot = null;
+let princeeBot = null;
 
 let deadLogs = [];
 let princeLogs = [];
 let wemmbuLogs = [];
+let princeeLogs = [];
 
 function timeNow() {
 
@@ -137,6 +139,10 @@ function addLog(botName, msg) {
 
   if (botName === "Wemmbu_Alt") {
     pushLog(wemmbuLogs, html);
+  }
+
+  if (botName === "Princee_07") {
+    pushLog(princeeLogs, html);
   }
 
 }
@@ -309,6 +315,19 @@ function createBot(name, password) {
 
       }
 
+      if (
+        name === "Princee_07"
+        && princeeBot
+      ) {
+
+        princeeBot =
+        createBot(
+          "Princee_07",
+          "896926@"
+        );
+
+      }
+
     }, 60000);
 
   });
@@ -427,6 +446,7 @@ gap:12px;
 .switcher{
 display:flex;
 gap:10px;
+flex-wrap:wrap;
 }
 
 .botBtn{
@@ -600,6 +620,13 @@ onclick="switchBot('Wemmbu_Alt')">
 Wemmbu_Alt
 </button>
 
+<button
+id="Princee_07Tab"
+class="botBtn"
+onclick="switchBot('Princee_07')">
+Princee_07
+</button>
+
 </div>
 
 <div
@@ -718,6 +745,10 @@ document
 .classList.remove("activeBtn");
 
 document
+.getElementById("Princee_07Tab")
+.classList.remove("activeBtn");
+
+document
 .getElementById(name + "Tab")
 .classList.add("activeBtn");
 
@@ -733,17 +764,25 @@ await fetch('/data');
 const data =
 await res.json();
 
-const bot =
+let bot;
 
-currentBot === "Deadmau5"
+if(currentBot === "Deadmau5"){
 
-? data.dead
+  bot = data.dead;
 
-: currentBot === "Prince"
+}else if(currentBot === "Prince"){
 
-? data.prince
+  bot = data.prince;
 
-: data.wemmbu;
+}else if(currentBot === "Wemmbu_Alt"){
+
+  bot = data.wemmbu;
+
+}else{
+
+  bot = data.princee;
+
+}
 
 document
 .getElementById("console")
@@ -929,6 +968,11 @@ app.get("/data", (req, res) => {
     wemmbu:{
       logs:wemmbuLogs,
       info:botInfo(wemmbuBot)
+    },
+
+    princee:{
+      logs:princeeLogs,
+      info:botInfo(princeeBot)
     }
 
   });
@@ -952,6 +996,10 @@ app.post("/send", (req, res) => {
 
   if (botName === "Wemmbu_Alt") {
     bot = wemmbuBot;
+  }
+
+  if (botName === "Princee_07") {
+    bot = princeeBot;
   }
 
   if (!bot) {
@@ -993,6 +1041,10 @@ app.post("/attack", (req, res) => {
 
   if (botName === "Wemmbu_Alt") {
     bot = wemmbuBot;
+  }
+
+  if (botName === "Princee_07") {
+    bot = princeeBot;
   }
 
   if (!bot) {
@@ -1073,6 +1125,10 @@ app.post("/stopattack", (req, res) => {
     bot = wemmbuBot;
   }
 
+  if (botName === "Princee_07") {
+    bot = princeeBot;
+  }
+
   if (!bot) {
     return res.sendStatus(404);
   }
@@ -1137,6 +1193,19 @@ app.post("/start", (req, res) => {
 
   }
 
+  if (
+    bot === "Princee_07"
+    && !princeeBot
+  ) {
+
+    princeeBot =
+    createBot(
+      "Princee_07",
+      "896926@"
+    );
+
+  }
+
   res.sendStatus(200);
 
 });
@@ -1178,6 +1247,17 @@ app.post("/stop", (req, res) => {
 
   }
 
+  if (
+    bot === "Princee_07"
+    && princeeBot
+  ) {
+
+    princeeBot.quit();
+
+    princeeBot = null;
+
+  }
+
   res.sendStatus(200);
 
 });
@@ -1198,6 +1278,12 @@ wemmbuBot =
 createBot(
   "Wemmbu_Alt",
   "676769"
+);
+
+princeeBot =
+createBot(
+  "Princee_07",
+  "896926@"
 );
 
 app.listen(
