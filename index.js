@@ -6,15 +6,21 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// ================= BOTS =================
+
 let deadBot = null;
 let princeBot = null;
 let wemmbuBot = null;
 let princeeBot = null;
 
+// ================= LOGS =================
+
 let deadLogs = [];
 let princeLogs = [];
 let wemmbuLogs = [];
 let princeeLogs = [];
+
+// ================= TIME =================
 
 function timeNow() {
 
@@ -28,19 +34,25 @@ function timeNow() {
 
 }
 
+// ================= LOG PUSH =================
+
 function pushLog(arr, html) {
 
   arr.push(html);
 
-  if (arr.length > 400) {
+  if(arr.length > 400){
+
     arr.shift();
+
   }
 
 }
 
+// ================= MC COLOR =================
+
 function mcColor(text) {
 
-  if (!text) return "";
+  if(!text) return "";
 
   text = text.replace(/\x1B\[[0-9;]*m/g, "");
 
@@ -84,13 +96,15 @@ function mcColor(text) {
 
 }
 
+// ================= ADD LOG =================
+
 function addLog(botName, msg) {
 
-  if (!msg) return;
+  if(!msg) return;
 
   msg = msg.trim();
 
-  if (!msg.length) return;
+  if(!msg.length) return;
 
   let sender = "SERVER";
 
@@ -99,7 +113,7 @@ function addLog(botName, msg) {
   const normal =
   msg.match(/^<([^>]+)>\s(.+)/);
 
-  if (normal) {
+  if(normal){
 
     sender = normal[1];
 
@@ -129,29 +143,31 @@ function addLog(botName, msg) {
 
   `;
 
-  if (botName === "Deadmau5") {
+  if(botName === "Deadmau5"){
     pushLog(deadLogs, html);
   }
 
-  if (botName === "Prince") {
+  if(botName === "Prince"){
     pushLog(princeLogs, html);
   }
 
-  if (botName === "Wemmbu_Alt") {
+  if(botName === "Wemmbu_Alt"){
     pushLog(wemmbuLogs, html);
   }
 
-  if (botName === "Princee_07") {
+  if(botName === "Princee_07"){
     pushLog(princeeLogs, html);
   }
 
 }
 
-function antiAfk(bot) {
+// ================= ANTI AFK =================
+
+function antiAfk(bot){
 
   setInterval(() => {
 
-    try {
+    try{
 
       if(!bot.entity) return;
 
@@ -174,13 +190,15 @@ function antiAfk(bot) {
 
       }, 300);
 
-    } catch {}
+    }catch{}
 
   }, 30000);
 
 }
 
-function createBot(name, password) {
+// ================= CREATE BOT =================
+
+function createBot(name, password){
 
   addLog(
     name,
@@ -189,11 +207,11 @@ function createBot(name, password) {
 
   const bot = mineflayer.createBot({
 
-    host: "karmasmp.ddns.net",
+    host:"karmasmp.ddns.net",
 
-    port: 25565,
+    port:25565,
 
-    username: name
+    username:name
 
   });
 
@@ -276,10 +294,10 @@ function createBot(name, password) {
         "§6Reconnecting..."
       );
 
-      if (
+      if(
         name === "Deadmau5"
         && deadBot
-      ) {
+      ){
 
         deadBot =
         createBot(
@@ -289,10 +307,10 @@ function createBot(name, password) {
 
       }
 
-      if (
+      if(
         name === "Prince"
         && princeBot
-      ) {
+      ){
 
         princeBot =
         createBot(
@@ -302,10 +320,10 @@ function createBot(name, password) {
 
       }
 
-      if (
+      if(
         name === "Wemmbu_Alt"
         && wemmbuBot
-      ) {
+      ){
 
         wemmbuBot =
         createBot(
@@ -315,10 +333,10 @@ function createBot(name, password) {
 
       }
 
-      if (
+      if(
         name === "Princee_07"
         && princeeBot
-      ) {
+      ){
 
         princeeBot =
         createBot(
@@ -345,9 +363,11 @@ function createBot(name, password) {
 
 }
 
-function botInfo(bot) {
+// ================= BOT INFO =================
 
-  if (!bot || !bot.entity) {
+function botInfo(bot){
+
+  if(!bot || !bot.entity){
 
     return {
 
@@ -388,6 +408,8 @@ function botInfo(bot) {
 
 }
 
+// ================= WEBSITE =================
+
 app.get("/", (req, res) => {
 
 res.send(`
@@ -402,63 +424,39 @@ res.send(`
 
 <style>
 
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Consolas;
-}
-
 body{
 background:#0a0a0a;
 color:white;
+font-family:Consolas;
+margin:0;
+display:flex;
 height:100vh;
-overflow:hidden;
 }
 
-.top{
-height:70px;
-background:#111111;
-border-bottom:1px solid #202020;
-display:flex;
-align-items:center;
-padding:0 25px;
-}
-
-.logo{
-font-size:30px;
-font-weight:bold;
-}
-
-.main{
-display:flex;
-height:calc(100vh - 70px);
-}
-
-.consoleArea{
+.left{
 flex:1;
 display:flex;
 flex-direction:column;
-padding:14px;
-gap:12px;
+padding:12px;
 }
 
-.switcher{
+.tabs{
 display:flex;
 gap:10px;
+margin-bottom:10px;
 flex-wrap:wrap;
 }
 
-.botBtn{
+.tab{
+padding:10px 16px;
 background:#171717;
-border:1px solid #333;
-padding:10px 18px;
+border:none;
 border-radius:10px;
-cursor:pointer;
 color:white;
+cursor:pointer;
 }
 
-.activeBtn{
+.active{
 background:#2563eb;
 }
 
@@ -466,21 +464,16 @@ background:#2563eb;
 flex:1;
 background:#050505;
 border:1px solid #222;
-border-radius:14px;
-padding:14px;
+border-radius:12px;
+padding:12px;
 overflow:auto;
 font-size:14px;
-line-height:1.3;
-display:flex;
-flex-direction:column;
-gap:4px;
 }
 
 .line{
 display:flex;
 gap:10px;
-white-space:pre-wrap;
-word-break:break-word;
+margin-bottom:4px;
 }
 
 .time{
@@ -490,8 +483,8 @@ min-width:90px;
 
 .sender{
 color:#38bdf8;
+min-width:140px;
 font-weight:bold;
-min-width:150px;
 }
 
 .msg{
@@ -501,16 +494,16 @@ flex:1;
 .inputBar{
 display:flex;
 gap:10px;
+margin-top:10px;
 }
 
 .input{
 flex:1;
+padding:12px;
 background:#111;
 border:1px solid #333;
-padding:14px;
 border-radius:10px;
 color:white;
-outline:none;
 }
 
 .send{
@@ -518,44 +511,26 @@ width:120px;
 border:none;
 background:#2563eb;
 color:white;
-font-weight:bold;
 border-radius:10px;
 cursor:pointer;
 }
 
-.side{
+.right{
 width:320px;
 background:#111;
-border-left:1px solid #222;
-padding:14px;
-display:flex;
-flex-direction:column;
-gap:14px;
+padding:12px;
 overflow:auto;
+border-left:1px solid #222;
 }
 
 .panel{
 background:#171717;
-border:1px solid #292929;
+padding:12px;
 border-radius:12px;
-padding:14px;
+margin-bottom:12px;
 }
 
-.playerList{
-display:flex;
-flex-wrap:wrap;
-gap:8px;
-}
-
-.player{
-background:#0d1117;
-border:1px solid #333;
-padding:6px 10px;
-border-radius:999px;
-font-size:12px;
-}
-
-.ctrls{
+.btns{
 display:flex;
 gap:10px;
 margin-top:10px;
@@ -566,17 +541,25 @@ flex:1;
 padding:10px;
 border:none;
 border-radius:10px;
-font-weight:bold;
 cursor:pointer;
 color:white;
 }
 
-.start{
+.green{
 background:#16a34a;
 }
 
-.stop{
+.red{
 background:#dc2626;
+}
+
+.player{
+background:#0d1117;
+padding:6px 10px;
+border-radius:999px;
+margin:4px;
+display:inline-block;
+font-size:12px;
 }
 
 </style>
@@ -585,62 +568,28 @@ background:#dc2626;
 
 <body>
 
-<div class="top">
+<div class="left">
 
-<div class="logo">
-KarmaSmp Bot Manager
-</div>
+<div class="tabs">
 
-</div>
+<button id="Deadmau5Tab" class="tab active" onclick="switchBot('Deadmau5')">Deadmau5</button>
 
-<div class="main">
+<button id="PrinceTab" class="tab" onclick="switchBot('Prince')">Prince</button>
 
-<div class="consoleArea">
+<button id="Wemmbu_AltTab" class="tab" onclick="switchBot('Wemmbu_Alt')">Wemmbu_Alt</button>
 
-<div class="switcher">
-
-<button
-id="Deadmau5Tab"
-class="botBtn activeBtn"
-onclick="switchBot('Deadmau5')">
-Deadmau5
-</button>
-
-<button
-id="PrinceTab"
-class="botBtn"
-onclick="switchBot('Prince')">
-Prince
-</button>
-
-<button
-id="Wemmbu_AltTab"
-class="botBtn"
-onclick="switchBot('Wemmbu_Alt')">
-Wemmbu_Alt
-</button>
-
-<button
-id="Princee_07Tab"
-class="botBtn"
-onclick="switchBot('Princee_07')">
-Princee_07
-</button>
+<button id="Princee_07Tab" class="tab" onclick="switchBot('Princee_07')">Princee_07</button>
 
 </div>
 
-<div
-class="console"
-id="console">
-Loading...
-</div>
+<div class="console" id="console"></div>
 
 <div class="inputBar">
 
 <input
 id="cmd"
 class="input"
-placeholder="Send message or command">
+placeholder="Send message">
 
 <button
 class="send"
@@ -652,7 +601,7 @@ SEND
 
 </div>
 
-<div class="side">
+<div class="right">
 
 <div class="panel">
 
@@ -660,20 +609,18 @@ SEND
 Deadmau5
 </h2>
 
-<div id="stats">
-Loading...
-</div>
+<div id="stats"></div>
 
-<div class="ctrls">
+<div class="btns">
 
 <button
-class="small start"
+class="small green"
 onclick="startBot()">
 START
 </button>
 
 <button
-class="small stop"
+class="small red"
 onclick="stopBot()">
 STOP
 </button>
@@ -688,16 +635,16 @@ STOP
 Auto Attack
 </h3>
 
-<div class="ctrls">
+<div class="btns">
 
 <button
-class="small start"
+class="small green"
 onclick="startAttack()">
 START
 </button>
 
 <button
-class="small stop"
+class="small red"
 onclick="stopAttack()">
 STOP
 </button>
@@ -709,16 +656,10 @@ STOP
 <div class="panel">
 
 <h3>
-Online Players
+Players Online
 </h3>
 
-<div
-class="playerList"
-id="players">
-Loading...
-</div>
-
-</div>
+<div id="players"></div>
 
 </div>
 
@@ -732,25 +673,12 @@ function switchBot(name){
 
 currentBot = name;
 
-document
-.getElementById("Deadmau5Tab")
-.classList.remove("activeBtn");
-
-document
-.getElementById("PrinceTab")
-.classList.remove("activeBtn");
-
-document
-.getElementById("Wemmbu_AltTab")
-.classList.remove("activeBtn");
-
-document
-.getElementById("Princee_07Tab")
-.classList.remove("activeBtn");
+document.querySelectorAll(".tab")
+.forEach(e=>e.classList.remove("active"));
 
 document
 .getElementById(name + "Tab")
-.classList.add("activeBtn");
+.classList.add("active");
 
 refresh();
 
@@ -759,7 +687,7 @@ refresh();
 async function refresh(){
 
 const res =
-await fetch('/data');
+await fetch("/data");
 
 const data =
 await res.json();
@@ -768,19 +696,19 @@ let bot;
 
 if(currentBot === "Deadmau5"){
 
-  bot = data.dead;
+bot = data.dead;
 
 }else if(currentBot === "Prince"){
 
-  bot = data.prince;
+bot = data.prince;
 
 }else if(currentBot === "Wemmbu_Alt"){
 
-  bot = data.wemmbu;
+bot = data.wemmbu;
 
 }else{
 
-  bot = data.princee;
+bot = data.princee;
 
 }
 
@@ -824,20 +752,17 @@ consoleDiv.scrollHeight;
 
 async function sendMsg(){
 
-const input =
-document.getElementById("cmd");
-
 const msg =
-input.value;
+document.getElementById("cmd").value;
 
 if(!msg) return;
 
-await fetch('/send',{
+await fetch("/send",{
 
-method:'POST',
+method:"POST",
 
 headers:{
-'Content-Type':'application/json'
+"Content-Type":"application/json"
 },
 
 body:JSON.stringify({
@@ -847,18 +772,20 @@ msg:msg
 
 });
 
-input.value = "";
+document
+.getElementById("cmd")
+.value = "";
 
 }
 
 async function startAttack(){
 
-await fetch('/attack',{
+await fetch("/attack",{
 
-method:'POST',
+method:"POST",
 
 headers:{
-'Content-Type':'application/json'
+"Content-Type":"application/json"
 },
 
 body:JSON.stringify({
@@ -871,12 +798,48 @@ bot:currentBot
 
 async function stopAttack(){
 
-await fetch('/stopattack',{
+await fetch("/stopattack",{
 
-method:'POST',
+method:"POST",
 
 headers:{
-'Content-Type':'application/json'
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+bot:currentBot
+})
+
+});
+
+}
+
+async function startBot(){
+
+await fetch("/start",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+bot:currentBot
+})
+
+});
+
+}
+
+async function stopBot(){
+
+await fetch("/stop",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
 },
 
 body:JSON.stringify({
@@ -890,10 +853,10 @@ bot:currentBot
 document
 .getElementById("cmd")
 .addEventListener(
-'keypress',
+"keypress",
 e=>{
 
-if(e.key === 'Enter'){
+if(e.key === "Enter"){
 
 sendMsg();
 
@@ -901,43 +864,7 @@ sendMsg();
 
 });
 
-async function startBot(){
-
-await fetch('/start',{
-
-method:'POST',
-
-headers:{
-'Content-Type':'application/json'
-},
-
-body:JSON.stringify({
-bot:currentBot
-})
-
-});
-
-}
-
-async function stopBot(){
-
-await fetch('/stop',{
-
-method:'POST',
-
-headers:{
-'Content-Type':'application/json'
-},
-
-body:JSON.stringify({
-bot:currentBot
-})
-
-});
-
-}
-
-setInterval(refresh,1000);
+setInterval(refresh, 1000);
 
 refresh();
 
@@ -950,6 +877,8 @@ refresh();
 `);
 
 });
+
+// ================= DATA =================
 
 app.get("/data", (req, res) => {
 
@@ -979,6 +908,8 @@ app.get("/data", (req, res) => {
 
 });
 
+// ================= SEND =================
+
 app.post("/send", (req, res) => {
 
   const botName = req.body.bot;
@@ -986,27 +917,27 @@ app.post("/send", (req, res) => {
 
   let bot = null;
 
-  if (botName === "Deadmau5") {
+  if(botName === "Deadmau5"){
     bot = deadBot;
   }
 
-  if (botName === "Prince") {
+  if(botName === "Prince"){
     bot = princeBot;
   }
 
-  if (botName === "Wemmbu_Alt") {
+  if(botName === "Wemmbu_Alt"){
     bot = wemmbuBot;
   }
 
-  if (botName === "Princee_07") {
+  if(botName === "Princee_07"){
     bot = princeeBot;
   }
 
-  if (!bot) {
+  if(!bot){
     return res.sendStatus(404);
   }
 
-  try {
+  try{
 
     bot.chat(msg.toString());
 
@@ -1017,7 +948,7 @@ app.post("/send", (req, res) => {
 
     res.sendStatus(200);
 
-  } catch {
+  }catch{
 
     res.sendStatus(500);
 
@@ -1025,33 +956,35 @@ app.post("/send", (req, res) => {
 
 });
 
+// ================= ATTACK =================
+
 app.post("/attack", (req, res) => {
 
   const botName = req.body.bot;
 
   let bot = null;
 
-  if (botName === "Deadmau5") {
+  if(botName === "Deadmau5"){
     bot = deadBot;
   }
 
-  if (botName === "Prince") {
+  if(botName === "Prince"){
     bot = princeBot;
   }
 
-  if (botName === "Wemmbu_Alt") {
+  if(botName === "Wemmbu_Alt"){
     bot = wemmbuBot;
   }
 
-  if (botName === "Princee_07") {
+  if(botName === "Princee_07"){
     bot = princeeBot;
   }
 
-  if (!bot) {
+  if(!bot){
     return res.sendStatus(404);
   }
 
-  if (bot.tapLoop) {
+  if(bot.tapLoop){
     clearInterval(bot.tapLoop);
   }
 
@@ -1062,7 +995,7 @@ app.post("/attack", (req, res) => {
 
   bot.tapLoop = setInterval(() => {
 
-    try {
+    try{
 
       bot.swingArm("right");
 
@@ -1092,7 +1025,7 @@ app.post("/attack", (req, res) => {
 
       }
 
-    } catch(err){
+    }catch(err){
 
       addLog(
         botName,
@@ -1107,33 +1040,35 @@ app.post("/attack", (req, res) => {
 
 });
 
+// ================= STOP ATTACK =================
+
 app.post("/stopattack", (req, res) => {
 
   const botName = req.body.bot;
 
   let bot = null;
 
-  if (botName === "Deadmau5") {
+  if(botName === "Deadmau5"){
     bot = deadBot;
   }
 
-  if (botName === "Prince") {
+  if(botName === "Prince"){
     bot = princeBot;
   }
 
-  if (botName === "Wemmbu_Alt") {
+  if(botName === "Wemmbu_Alt"){
     bot = wemmbuBot;
   }
 
-  if (botName === "Princee_07") {
+  if(botName === "Princee_07"){
     bot = princeeBot;
   }
 
-  if (!bot) {
+  if(!bot){
     return res.sendStatus(404);
   }
 
-  if (bot.tapLoop) {
+  if(bot.tapLoop){
 
     clearInterval(bot.tapLoop);
 
@@ -1150,14 +1085,13 @@ app.post("/stopattack", (req, res) => {
 
 });
 
+// ================= START =================
+
 app.post("/start", (req, res) => {
 
   const bot = req.body.bot;
 
-  if (
-    bot === "Deadmau5"
-    && !deadBot
-  ) {
+  if(bot === "Deadmau5" && !deadBot){
 
     deadBot =
     createBot(
@@ -1167,10 +1101,7 @@ app.post("/start", (req, res) => {
 
   }
 
-  if (
-    bot === "Prince"
-    && !princeBot
-  ) {
+  if(bot === "Prince" && !princeBot){
 
     princeBot =
     createBot(
@@ -1180,10 +1111,7 @@ app.post("/start", (req, res) => {
 
   }
 
-  if (
-    bot === "Wemmbu_Alt"
-    && !wemmbuBot
-  ) {
+  if(bot === "Wemmbu_Alt" && !wemmbuBot){
 
     wemmbuBot =
     createBot(
@@ -1193,10 +1121,7 @@ app.post("/start", (req, res) => {
 
   }
 
-  if (
-    bot === "Princee_07"
-    && !princeeBot
-  ) {
+  if(bot === "Princee_07" && !princeeBot){
 
     princeeBot =
     createBot(
@@ -1210,14 +1135,13 @@ app.post("/start", (req, res) => {
 
 });
 
+// ================= STOP =================
+
 app.post("/stop", (req, res) => {
 
   const bot = req.body.bot;
 
-  if (
-    bot === "Deadmau5"
-    && deadBot
-  ) {
+  if(bot === "Deadmau5" && deadBot){
 
     deadBot.quit();
 
@@ -1225,10 +1149,7 @@ app.post("/stop", (req, res) => {
 
   }
 
-  if (
-    bot === "Prince"
-    && princeBot
-  ) {
+  if(bot === "Prince" && princeBot){
 
     princeBot.quit();
 
@@ -1236,10 +1157,7 @@ app.post("/stop", (req, res) => {
 
   }
 
-  if (
-    bot === "Wemmbu_Alt"
-    && wemmbuBot
-  ) {
+  if(bot === "Wemmbu_Alt" && wemmbuBot){
 
     wemmbuBot.quit();
 
@@ -1247,10 +1165,7 @@ app.post("/stop", (req, res) => {
 
   }
 
-  if (
-    bot === "Princee_07"
-    && princeeBot
-  ) {
+  if(bot === "Princee_07" && princeeBot){
 
     princeeBot.quit();
 
@@ -1261,6 +1176,8 @@ app.post("/stop", (req, res) => {
   res.sendStatus(200);
 
 });
+
+// ================= AUTO START =================
 
 deadBot =
 createBot(
@@ -1285,6 +1202,8 @@ createBot(
   "Princee_07",
   "896926@"
 );
+
+// ================= SERVER =================
 
 app.listen(
 3000,
