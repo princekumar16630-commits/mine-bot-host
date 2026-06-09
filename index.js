@@ -357,10 +357,6 @@ body{
 
 margin:0;
 
-body{
-
-margin:0;
-
 height:100vh;
 
 display:flex;
@@ -375,10 +371,6 @@ circle at top left,
 #1e293b,
 #020617
 );
-
-overflow:hidden;
-
-};
 
 overflow:hidden;
 
@@ -399,12 +391,27 @@ flex-wrap:wrap;
 }
 
 .tab{
+
 padding:10px 16px;
-background:#171717;
+
+background:#161b22;
+
 border:none;
-border-radius:10px;
+
+border-radius:12px;
+
 color:white;
+
 cursor:pointer;
+
+transition:.25s;
+
+}
+.tab:hover{
+
+transform:
+translateY(-2px);
+
 }
 
 .active{
@@ -422,19 +429,48 @@ box-shadow:
 }
 
 .console{
+
 flex:1;
-background:#050505;
-border:1px solid #222;
-border-radius:12px;
+
+background:
+rgba(255,255,255,.04);
+
+backdrop-filter:
+blur(16px);
+
+border:
+1px solid rgba(255,255,255,.08);
+
+border-radius:18px;
+
 padding:12px;
+
 overflow:auto;
+
 font-size:14px;
+
+box-shadow:
+0 0 35px
+rgba(59,130,246,.15);
+
+transition:
+opacity .2s ease;
+
 }
 
 .line{
-display:flex;
-gap:10px;
+
+display:grid;
+
+grid-template-columns:
+90px 140px 1fr;
+
+gap:8px;
+
 margin-bottom:4px;
+
+align-items:start;
+
 }
 
 .time{
@@ -477,7 +513,7 @@ cursor:pointer;
 }
 
 .right{
-width:320px;
+width:380px;
 background:#111;
 padding:12px;
 overflow:auto;
@@ -485,10 +521,26 @@ border-left:1px solid #222;
 }
 
 .panel{
-background:#171717;
-padding:12px;
-border-radius:12px;
+
+background:
+rgba(255,255,255,.05);
+
+backdrop-filter:
+blur(16px);
+
+border:
+1px solid rgba(255,255,255,.08);
+
+border-radius:18px;
+
+padding:14px;
+
 margin-bottom:12px;
+
+box-shadow:
+0 0 30px
+rgba(59,130,246,.12);
+
 }
 
 .btns{
@@ -498,12 +550,29 @@ margin-top:10px;
 }
 
 .small{
+
 flex:1;
-padding:10px;
+
+padding:12px;
+
 border:none;
-border-radius:10px;
+
+border-radius:12px;
+
 cursor:pointer;
+
 color:white;
+
+font-weight:bold;
+
+transition:.2s;
+
+}
+.small:hover{
+
+transform:
+translateY(-2px);
+
 }
 
 .green{
@@ -564,7 +633,13 @@ SEND
 
 <div class="panel">
 
-<h2 id="activeName">
+<h2
+id="activeName"
+style="
+margin-top:0;
+font-size:28px;
+letter-spacing:1px;
+">
 Deadmau5
 </h2>
 
@@ -654,8 +729,18 @@ bot.logs.join("");
 const consoleDiv =
 document.getElementById("console");
 
+const nearBottom =
+consoleDiv.scrollHeight -
+consoleDiv.scrollTop -
+consoleDiv.clientHeight
+< 100;
+
+if(nearBottom){
+
 consoleDiv.scrollTop =
 consoleDiv.scrollHeight;
+
+}
 
 }
 
