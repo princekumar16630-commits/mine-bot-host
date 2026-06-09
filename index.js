@@ -241,14 +241,7 @@ function createBot(name, password){
 
   });
 
-  bot.on("chat", (username, message) => {
-
-    addLog(
-      name,
-      "<" + username + "> " + message
-    );
-
-  });
+;
 
   bot.on("playerJoined", (player) => {
 
@@ -361,12 +354,34 @@ res.send(`
 <style>
 
 body{
-background:#0a0a0a;
-color:white;
-font-family:Consolas;
+
 margin:0;
-display:flex;
+
+body{
+
+margin:0;
+
 height:100vh;
+
+display:flex;
+
+font-family:Consolas;
+
+color:white;
+
+background:
+radial-gradient(
+circle at top left,
+#1e293b,
+#020617
+);
+
+overflow:hidden;
+
+};
+
+overflow:hidden;
+
 }
 
 .left{
@@ -393,7 +408,17 @@ cursor:pointer;
 }
 
 .active{
-background:#2563eb;
+
+background:
+linear-gradient(
+135deg,
+#3b82f6,
+#8b5cf6
+);
+
+box-shadow:
+0 0 18px #3b82f6;
+
 }
 
 .console{
@@ -571,6 +596,10 @@ function switchBot(name){
 
 currentBot = name;
 
+document
+.getElementById("activeName")
+.innerText = name;
+
 document.querySelectorAll(".tab")
 .forEach(e=>e.classList.remove("active"));
 
@@ -578,7 +607,18 @@ document
 .getElementById(name + "Tab")
 .classList.add("active");
 
+const consoleDiv =
+document.getElementById("console");
+
+consoleDiv.style.opacity = 0;
+
+setTimeout(()=>{
+
 refresh();
+
+consoleDiv.style.opacity = 1;
+
+},150);
 
 }
 
